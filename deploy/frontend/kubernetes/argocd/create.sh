@@ -2,11 +2,11 @@
 # 启用 POSIX 模式并设置严格的错误处理机制
 set -o posix errexit -o pipefail
 
-PROJECT="simplebank"
+PROJECT="bank1"
 CLUSTER_URL="https://116.213.43.175:6443"
 REPO_URL="https://github.com/sunmery/simplebank.git"
 APPLICATION_NAME="bank-frontend1"
-NAMESPACE="ban1"
+NAMESPACE="bank1"
 
 # 创建项目
 argocd proj create ${PROJECT}
@@ -48,6 +48,7 @@ argocd proj add-destination ${PROJECT} ${CLUSTER_URL} ${PROJECT}
 #EOF
 
 # 创建APP
+
 argocd app create ${APPLICATION_NAME} \
 --project ${PROJECT} \
 --repo ${REPO_URL} \
