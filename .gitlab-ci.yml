@@ -1,0 +1,332 @@
+stages:
+  - init
+  - build
+  - test
+  - manifests
+  - deploy
+  - verify
+
+# 变量列表
+variables:
+  # 初始化相关配置:
+  # 是否需要初始化web, 初始化的工作包含拉取和构建运行Web应用的镜像
+  FRONTEND_INIT: "false"
+  # 是否需要初始化argo, 初始化的工作包含创建argo的proj
+  BACKEND_INIT: "false"
+
+  # Runner相关配置:
+  # 运行前端的runner tag
+  FRONTEND_TAG: node
+  # 运行后端的runner tag
+  BACKEND_TAG: go
+  # 运行Docker的runner tag
+  DOCKER_TAG: docker_26.1.0_dind_alpine3.19
+  # shell程序的runner tag
+  SHELL_TAG: shell_alpine
+
+  # 前端项目相关配置:
+  # 作者/组织
+  FRONTEND_PROJECT_AUTHORS: lisa
+  # 前端端项目名称
+  FRONTEND_PROJECT_NAME: frontend
+  # 版本号, 例如v1.0.0, latest, 这里使用了git tag <VERSION> 作为版本号, CI_COMMIT_TAG是gitlab ci内置命令
+  FRONTEND_VERSION: ${CI_COMMIT_TAG}
+  # 构建Node的版本
+  NODE_VERSION: "node:20.11.0-alpine"
+  FRONTEND_PORT1: 80
+  FRONTEND_PORT2: 443
+  BUILD_DIR_NAME: dist
+
+  # 后端项目相关配置:
+  # 作者/组织
+  BACKEND_PROJECT_AUTHORS: lisa
+  # 服务端项目名称
+  BACKEND_PROJECT_NAME: backend
+  BACKEND_IMAGE_URL: ${REGISTER_ADDRESS}/${BACKEND_PROJECT_AUTHORS}/BACKEND_PROJECT_NAME
+  # 版本号, 例如v1.0.0, latest, 这里使用了git tag <VERSION> 作为版本号, CI_COMMIT_TAG是gitlab ci内置命令
+  BACKEND_VERSION: ${CI_COMMIT_TAG}
+  # HTTP端口
+  BACKEND_PORT1: 30001
+  # gRPC端口
+  BACKEND_PORT2: 30002
+  # 使用的镜像, 除了dockerhub之外的镜像都需要添加供应商前缀
+  GO_IMAGE: golang:1.22.2-alpine3.19
+  # 构建的目标平台架构
+  ARCH: amd64
+  # 是否使用CGO
+  CGO_ENABLED: 0
+  # alpine user id
+  UID: 10001
+
+  # 清单仓库
+  MANIFESTS_URL: "https://gitlab.com/lookeke/manifests.git"
+  MANIFESTS_NAMESPACE: "backend"
+
+  # Docker 相关配置:
+  # 当使用dind服务时，你必须指示docker与服务内部启动的daemon对话。
+  # 这个守护进程可以通a网络连接来使用，而不是默认的/var/run/docker套接字。
+  # 如果你使用的是GitLab Runner 12.7或更早版本的Kubernetes执行器和Kubernetes 1.6或更早版本，由于
+  # Kubernetes执行器的连接方式，该变量必须设置为tcp://localhost:2375
+  DOCKER_HOST: "tcp://docker:2375"
+  # 这指示Docker不要重新启动TLS。如果远程注册表不是HTTPS, 就填写
+  DOCKER_TLS_CERTDIR: ""
+
+# 缓存机制
+cache:
+  key: nginx-quic
+  paths:
+    - frontend/node_modules
+
+# Docker登录模板
+.docker_login_template:
+  # 建议与你注册Runner选择的Docker镜像一致
+  image: ${DOCKER_TAG}
+  services:
+    # 建议与你注册Runner选择的Docker镜像一致
+    - ${DOCKER_TAG}
+  before_script:
+    - echo "正在查看Docker 信息"
+    - docker info
+    - echo "正在登录到远程注册表"
+    - docker login $REGISTER_ADDRESS -u $REGISTER_USERNAME -p $REGISTER_PASSWORD
+    - |
+      if [ -n "$BACKEND_VERSION" ]; then
+        echo "Git Tag版本号为: $BACKEND_VERSION"
+      else
+        echo "没有设置Tag版本号, 默认设置为 dev"
+        export BACKEND_VERSION="dev"
+      fi
+    - echo $BACKEND_VERSION
+
+# 前端模块测试
+job_frontend_test:
+  stage: test
+  image: node:18-alpine
+  tags:
+    - ${FRONTEND_TAG}
+  before_script:
+    - cd frontend
+    - npm install -g pnpm
+  script:
+    - pnpm i
+    - pnpm lint
+
+# 后端模块测试
+job_backend_test:
+  stage: test
+  image: ${GO_IMAGE}
+  tags:
+    - ${BACKEND_TAG}
+  before_script:
+    - cd backend
+  script:
+    - go test ./...
+  after_script:
+    - |
+      if [ $? -ne 0 ]; then
+        echo "测试失败
+        exit 1
+      fi
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/'
+      when: always
+
+# 构建前端容器镜像
+job_frontend_build:
+  stage: build
+  extends:
+    - .docker_login_template
+  script:
+    - >
+      docker build
+      -t $FRONTEND_PROJECT_AUTHORS/$FRONTEND_PROJECT_NAME:$FRONTEND_VERSION
+      -f ${FRONTEND_PROJECT_NAME}/Dockerfile ${FRONTEND_PROJECT_NAME}
+      --build-arg NODE_VERSION=${NODE_VERSION}
+      --build-arg PACK_VERSION=${PACK_VERSION}
+      --build-arg FRONTEND_PORT1=${FRONTEND_PORT1}
+      --build-arg FRONTEND_PORT2=${FRONTEND_PORT2}
+      --build-arg BUILD_DIR_NAME=${BUILD_DIR_NAME}
+    - docker tag $FRONTEND_PROJECT_AUTHORS/$FRONTEND_PROJECT_NAME:$FRONTEND_VERSION $REGISTER_ADDRESS/$FRONTEND_PROJECT_AUTHORS/$FRONTEND_PROJECT_NAME:$FRONTEND_VERSION
+    - docker push $REGISTER_ADDRESS/$FRONTEND_PROJECT_AUTHORS/$FRONTEND_PROJECT_NAME:$FRONTEND_VERSION
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/'
+      when: always
+
+# 构建后端容器镜像
+job_backend_build:
+  stage: build
+  tags:
+    - ${DOCKER_TAG}
+  extends:
+    - .docker_login_template
+  script:
+    - >
+      docker build
+      -t $BACKEND_PROJECT_AUTHORS/$BACKEND_PROJECT_NAME:$BACKEND_VERSION
+      -f ${BACKEND_PROJECT_NAME}/Dockerfile ${BACKEND_PROJECT_NAME}
+      --build-arg GO_IMAGE=${GO_IMAGE}
+      --build-arg ARCH=${ARCH}
+      --build-arg CGO_ENABLED=${CGO_ENABLED}
+      --build-arg UID=${UID}
+      --build-arg BACKEND_PORT1=${BACKEND_PORT1}
+      --build-arg BACKEND_PORT2=${BACKEND_PORT2}
+    - docker tag $BACKEND_PROJECT_AUTHORS/$BACKEND_PROJECT_NAME:$BACKEND_VERSION $REGISTER_ADDRESS/$BACKEND_PROJECT_AUTHORS/$BACKEND_PROJECT_NAME:$BACKEND_VERSION
+    - docker push $REGISTER_ADDRESS/$BACKEND_PROJECT_AUTHORS/$BACKEND_PROJECT_NAME:$BACKEND_VERSION
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/'
+      when: always
+
+# 初始化argocd项目
+job_create_argo_proj:
+  stage: init
+  image: ccr.ccs.tencentyun.com/lisa/alpine:latest
+  before_script:
+    - |
+      cat > env_vars.sh <<EOF
+       #!/usr/bin/bash
+       export ARGO_SERVER=${ARGO_SERVER}
+       export ARGO_USER=${ARGO_USER}
+       export ARGO_PASS=${ARGO_PASS}
+       export MANIFESTS_URL=${MANIFESTS_URL}
+       export MANIFESTS_NAMESPACE=${MANIFESTS_NAMESPACE}
+      EOF
+    - chmod +x ./env_vars.sh
+    - ./env_vars.sh
+    - >
+      sshpass -e scp -o stricthostkeychecking=no 
+      env_vars.sh 
+      deploy/frontend/kubernetes/argocd/create-frontend-proj.yml 
+      deploy/backend/kubernetes/argocd/create-backend-proj.yml
+      ${s_user}@${s_host1}:/tmp/
+  script:
+    - sshpass -e ssh -o stricthostkeychecking=no ${s_user}@${s_host1} '
+      chmod +x /tmp/env_vars.sh
+      ; source /tmp/env_vars.sh
+      ; cat /tmp/env_vars.sh
+      ; echo "检查服务器是否存在argocd"
+      ; argocd version
+      ; echo "正在登录Argocd服务器"
+      ; argocd login ${ARGO_SERVER} \
+      --username ${ARGO_USER} \
+      --password ${ARGO_PASS} \
+      --insecure
+      ; rm -rf /tmp/env_vars.sh
+      ; argocd proj create -f /tmp/create-frontend-proj.yml
+      ; argocd proj create -f /tmp/create-backend-proj.yml
+      ; argocd proj add-source ${MANIFESTS_NAMESPACE} ${MANIFESTS_URL}
+      ; argocd proj list
+      '
+  rules:
+    - if: '$BACKEND_INIT == "true"'
+      when: always
+
+# 部署前后端项目
+job_deploy:
+  stage: deploy
+  image: ccr.ccs.tencentyun.com/lisa/alpine:latest
+  tags:
+    - ${DOCKER_TAG}
+  before_script:
+    - |
+      cat > env_vars.sh <<EOF
+       #!/usr/bin/bash
+       export ARGO_SERVER=${ARGO_SERVER}
+       export ARGO_USER=${ARGO_USER}
+       export ARGO_PASS=${ARGO_PASS}
+      EOF
+    - chmod +x ./env_vars.sh
+    - ./env_vars.sh
+    - >
+      sshpass -e scp -o stricthostkeychecking=no 
+      env_vars.sh 
+      deploy/backend/kubernetes/argocd/create-backend-app.yml 
+      deploy/frontend/kubernetes/argocd/create-frontend-app.yml
+      ${s_user}@${s_host1}:/tmp/
+  script:
+    - sshpass -e ssh -o stricthostkeychecking=no ${s_user}@${s_host1} '
+      chmod +x /tmp/env_vars.sh
+      ; source /tmp/env_vars.sh
+      ; cat /tmp/env_vars.sh
+      ; echo "ARGO_SERVER=${ARGO_SERVER}"
+      ; echo "ARGO_USER=${ARGO_USER}"
+      ; echo "ARGO_PASS=${ARGO_PASS}"
+      ; echo "检查服务器是否存在argocd"
+      ; argocd version
+      ; echo "正在登录Argocd服务器"
+      ; argocd login ${ARGO_SERVER} \
+      --username ${ARGO_USER} \
+      --password ${ARGO_PASS} \
+      --insecure
+      ; rm -rf /tmp/env_vars.sh
+      ; argocd app create -f /tmp/create-frontend-app.yml
+      ; argocd app create -f /tmp/create-backend-app.yml
+      ; argocd app list
+      ;  rm -rf /tmp/create-frontend-app.yml
+      ;  rm -rf /tmp/create-backend-app.yml
+      '
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/'
+      when: always
+
+# 推送部署清单, 让argocd拉取
+job_push_manifests:
+  stage: manifests
+  image: ccr.ccs.tencentyun.com/lisa/alpine:git
+  before_script:
+    - which ssh-agent || apk update && apk add openssh-client
+    - mkdir -p /root/.ssh
+    - echo $SSH_PRIVATE_KEY > /root/.ssh/id_ed25519
+    - chmod 600 /root/.ssh/id_ed25519
+    - ssh-keyscan -H gitlab.com >> ~/.ssh/known_hosts || true
+    - chmod 644 ~/.ssh/known_hosts
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - git config --global user.email gitlab-ci@gmail.com
+    - git config --global user.name gitlab-ci
+    - git clone git@gitlab.com:lookeke/manifests.git
+    - cd manifests
+    - ls -latr
+  script:
+    - echo CI_MERGE_REQUEST_SOURCE_BRANCH_NAME $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+    - echo CI_MERGE_REQUEST_TARGET_BRANCH_NAME $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    - echo CI_DEFAULT_BRANCH $CI_DEFAULT_BRANCH
+    - |
+      if [ -z "${BACKEND_VERSION}" ]; then
+        echo "BACKEND_VERSION 为空"
+        sed -i "s/image:.*/image: ${REGISTER_ADDRESS}\/${BACKEND_PROJECT_AUTHORS}\/${BACKEND_PROJECT_NAME}:dev/g" full-stack-engineering/backend/deployment.yml
+      else
+        echo "使用BACKEND_VERSION: ${BACKEND_VERSION}"
+        sed -i "s/image:.*/image: ${REGISTER_ADDRESS}\/${BACKEND_PROJECT_AUTHORS}\/${BACKEND_PROJECT_NAME}:${BACKEND_VERSION}/g" full-stack-engineering/backend/deployment.yml
+      fi
+    - git add full-stack-engineering/backend/deployment.yml
+    - git commit -am "Update Image"
+    - git push
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/'
+      when: always
+
+# 验证阶段
+job_verify:
+  stage: verify
+  image: ccr.ccs.tencentyun.com/lisa/alpine
+  tags:
+    - ${DOCKER_TAG}
+  before_script:
+    - apk add curl
+  script:
+    - echo "访问前端网站"
+    - curl -L https://${s_host1}
+    # TODO 编写等待Kubernetes资源准备好接受流量时才进行请求
+    - echo "访问后端暴露的HTTP健康检查接口检测它的响应码是否为200"
+    - http_code=$(curl -s -o /dev/null -w "%{http_code}" http://${s_host1}:${BACKEND_PORT1}/helloworld/lisa)
+    - |
+      if [ curl $http_code -eq 200 ]; then
+        echo "HTTP的响应成功"
+      else
+        echo "HTTP请求失败"
+      fi
+  after_script:
+    - curl http://${s_host1}:${BACKEND_PORT1}/helloworld/lisa
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/'
+      when: always

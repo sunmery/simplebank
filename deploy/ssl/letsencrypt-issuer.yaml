@@ -1,0 +1,16 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-dns01
+spec:
+  acme:
+    privateKeySecretRef:
+      name: letsencrypt-dns01
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+      - dns01:
+          cloudflare:
+            email: xiconz@qq.com # 替换成你的 cloudflare 邮箱账号
+            apiTokenSecretRef:
+              key: api-token
+              name: cloudflare-api-token-secret # 引用保存 cloudflare 认证信息的 Secret

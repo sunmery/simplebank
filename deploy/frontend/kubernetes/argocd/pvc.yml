@@ -1,0 +1,14 @@
+# 声明PVC用于HTML存储
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: html-volume-claim
+  namespace: frontend
+spec:
+  accessModes:
+    - ReadWriteOnce
+  # storageClassName: nfs-csi # 如果不使用默认的SC, 则需要手动编写
+  resources:
+    requests:
+      storage: 100Mi
+---

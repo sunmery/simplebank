@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: backend # 项目名称
+  namespace: argo # 项目所在的命名空间，默认为argocd，可根据实际情况调整
+spec:
+  # 项目描述
+  description: "This project is for managing BACKEND applications"
+
+  # 允许应用部署到的命名空间列表
+  destinations:
+  - namespace: backend
+    server: https://192.168.2.160:6443 # 集群API地址，示例值需替换为实际地址
+
+  # 允许的目标 K8s 资源类型
+  clusterResourceWhitelist:
+    - group: '*'
+      #kind: '*'
+      kind: Namespace
+
+  # 允许创建所有命名空间范围的资源: ResourceQuota、LimitRange、NetworkPolicy 除外
+  namespaceResourceBlacklist:
+    - group: '*'
+      kind: ResourceQuota
+    - group: '*'
+      kind: LimitRange
+    - group: '*'
+      kind: NetworkPolicy
+  # 拒绝创建所有名称空间作用域的资源. 但除了以下的Kind除外:
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: Deployment
+    - group: '*'
+      kind: StatefulSet
+    - group: '*'
+      kind: Service
+    - group: '*'
+      kind: Namespace
+  # 源代码仓库配置
+  sourceRepos:
+  - https://gitlab.com/lookeke/manifests.git # 允许使用的Git仓库地址，根据实际情况修改
+
+  # 角色与成员
+  roles:
+  - name: admin # 角色名称
+    description: Access role for ROLE_NAME user
+    # 注意这里的subjects配置应当符合Argo CD的RBAC规范，例如使用proj:backend:admin
+    # 定义角色权限
+    policies:
+    # 允许 ROLE_NAME 角色对该命名空间下的项目进行: 获取/创建/同步/删除/操作
+    - p, proj:backend:admin, applications, get, backend/*, allow
+    - p, proj:backend:admin, applications, create, backend/*, allow
+    - p, proj:backend:admin, applications, sync, backend/*, allow
+    - p, proj:backend:admin, applications, delete, backend/*, allow
+    # 允许查看集群信息
+    - p, proj:backend:admin, clusters, get, backend/*, allow
+  orphanedResources:
+    warn: true
+# argocd proj create -f create-backend-proj.yml
+# kubectl apply -f create-backend-proj.yml

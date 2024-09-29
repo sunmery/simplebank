@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: .
+    image: lisa/backend:dev
+    # 把<appname> 替换为go mod xxx生成的名称, 也就是go build 之后的应用名称, 例如backend
+    container_name: backend
+    # 重启策略, 遇到错误就停止
+    restart: unless-stopped
+    # 环境变量
+    #environment:
+    #  -
+
+    # 重启策略, 永远重启
+    #restart: always
+
+    # 端口, 对应你的服务的端口
+    ports:
+      - "30001:30001"
+      - "30002:30002"
+    volumes:
+      - ./configs/:/data/conf/
+    # 定义容器启动时运行的命令, 把 backend 替换为go.mod文件里面module的名称, 例如 backend
+    command: [ "/app/backend", "-conf", "/data/conf" ]

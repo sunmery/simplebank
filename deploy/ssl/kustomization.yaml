@@ -1,0 +1,9 @@
+resources:
+  - letsencrypt-issuer.yaml
+namespace: cert-manager
+secretGenerator:
+  - name: cloudflare-api-token-secret
+    envs:
+      - .env.prod # token 就存放在这里，这个文件不会被提交到 Git 仓库中
+generatorOptions:
+  disableNameSuffixHash: true
