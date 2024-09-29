@@ -1,4 +1,3 @@
-#syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=node:20.11.0-alpine
 ARG PACK_VERSION=latest
@@ -15,7 +14,7 @@ WORKDIR /web
 RUN cd /web
 
 # 默认使用生产环境
-ENV NODE_ENV production
+# ENV NODE_ENV production
 
 # 如果出现错误提示: 缺少使用 process.dlopen:
 # Alpine v3.18及更早版本:
@@ -26,6 +25,8 @@ ENV NODE_ENV production
 # 缓存.npm依赖
 RUN --mount=type=cache,target=/root/.npm \
     npm install -g pnpm@$PACK_VERSION
+
+RUN pnpm -v
 
 COPY package.json .
 
@@ -46,6 +47,12 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     HUSKY=0 pnpm i
 
 COPY . .
+
+RUN node -v
+RUN pnpm -v
+RUN ls /web
+RUN pwd
+RUN cd ..
 
 # 打包
 RUN pnpm build
@@ -92,3 +99,6 @@ CMD ["nginx", "-g", "daemon off;"]
 # -p '443:443/udp' \
 # -p 80:80 \
 # ccr.ccs.tencentyun.com/lisa/frontend:v2
+
+# docker tag lisa/frontend:v6.0.0 ccr.ccs.tencentyun.com/lisa/frontend:v6.0.0
+# docker push ccr.ccs.tencentyun.com/lisa/frontend:v6.0.0

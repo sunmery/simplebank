@@ -36,6 +36,17 @@ export default defineConfig(async ({command}) => {
 		}
 	} else {
 		return {
+			plugins: [
+				react(),
+				// 				basicSsl({
+				// 					/** name of certification */
+				// 					name: 'test',
+				// 					/** custom trust domains */
+				// 					domains: ['*.custom.com'],
+				// 					/** custom certification directory */
+				// 					certDir: '/Users/.../.devServer/cert',
+				// 				}),
+			],
 			// build 独有配置
 			// 开发或生产环境服务的公共基础路径。合法的值包括以下几种：
 			// 绝对 URL 路径名，例如 /foo/
