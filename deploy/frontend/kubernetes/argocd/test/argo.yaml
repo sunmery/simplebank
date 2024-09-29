@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: bank12
+  name: bank-frontend12
 #   通常需要将资源添加到 argocd 命名空间。
   namespace: test1
 spec:
-  project: default
+  project: test1
   source:
     repoURL: https://github.com/sunmery/simplebank.git
     targetRevision: main

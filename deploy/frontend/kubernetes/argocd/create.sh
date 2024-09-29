@@ -2,11 +2,11 @@
 # 启用 POSIX 模式并设置严格的错误处理机制
 set -o posix errexit -o pipefail
 
-PROJECT="bank1"
+PROJECT="test1"
 CLUSTER_URL="https://116.213.43.175:6443"
 REPO_URL="https://github.com/sunmery/simplebank.git"
-APPLICATION_NAME="bank-frontend1"
-NAMESPACE="bank1"
+APPLICATION_NAME="bank-frontend12"
+NAMESPACE="test1"
 M_PATH="deploy/frontend/kubernetes/argocd/test"
 
 # 创建项目
