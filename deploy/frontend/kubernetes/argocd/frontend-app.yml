@@ -1,15 +1,15 @@
 apiVersion: argoproj.io/v1alpha1  # 指定 Argo CD API 版本
 kind: Application  # 定义资源类型为 Application
 metadata: # 元数据部分
-  name: bank-frontend   # 指定 Application 的名称
-  namespace: argo  # argocd所属的命名空间
+  name: bank   # 指定 Application 的名称
+  namespace: argocd  # argocd所属的命名空间
   # 定义资源的 finalizers
   # https://argo-cd.readthedocs.io/en/stable/user-guide/app_deletion/#about-the-deletion-finalizer
   finalizers:
     - resources-finalizer.argocd.argoproj.io  # 删除时行级联删除
     #- resources-finalizer.argocd.argoproj.io/background  # 删除时后台行级联删除
 spec: # 规范部分
-  project: frontend  # 应用程序将被配置的项目名称，这是在 Argo CD 中应用程序的一种组织方式
+  project:   # 应用程序将被配置的项目名称，这是在 Argo CD 中应用程序的一种组织方式
   source: # 指定源
     # Kubernetes 资源清单在仓库中的路径
     path: deploy/frontend/kubernetes/argocd

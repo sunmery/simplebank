@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
   name: bank # 项目名称
-  namespace: argo # 项目所在的命名空间，默认为argocd，可根据实际情况调整
+  namespace: argocd # 项目所在的命名空间，默认为argocd，可根据实际情况调整
 spec:
   # 项目描述
   description: "This project is for managing FRONTEND applications"
@@ -59,12 +59,12 @@ spec:
     # 定义角色权限
     policies:
     # 允许 ROLE_NAME 角色对该命名空间下的项目进行: 获取/创建/同步/删除/操作
-    - p, proj:frontend:admin, applications, get, frontend/*, allow
-    - p, proj:frontend:admin, applications, create, frontend/*, allow
-    - p, proj:frontend:admin, applications, sync, frontend/*, allow
-    - p, proj:frontend:admin, applications, delete, frontend/*, allow
+    - p, proj:bank:admin, applications, get, bank-frontend/*, allow
+    - p, proj:bank:admin, applications, create, bank-frontend/*, allow
+    - p, proj:bank:admin, applications, sync, bank-frontend/*, allow
+    - p, proj:bank:admin, applications, delete, bank-frontend/*, allow
     # 允许查看集群信息
-    - p, proj:frontend:admin, clusters, get, frontend/*, allow
+    - p, proj:bank:admin, clusters, get, /*, allow
   orphanedResources:
     warn: true
 # argocd proj create -f create-frontend-proj.yml

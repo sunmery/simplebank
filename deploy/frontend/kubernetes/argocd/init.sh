@@ -9,7 +9,7 @@ unset BRANCH
 unset PROJECT_GIT_URL
 
 # argocd所在的的命名空间
-export ARGOCD_NAMESPACE="argo"
+export ARGOCD_NAMESPACE="argocd"
 # 角色名称, 用于管理项目
 export ROLE_NAME="admin"
 # Kubernetes集群地址
@@ -27,10 +27,13 @@ export FRONTEND_DEPLOY_PATH="deploy/frontend/kubernetes/argocd"
 # 前端命名空间, 不需要额外创建命名空间选择default即可
 export FRONTEND_NAMESPACE="bank"
 # argocd中的前端项目名, 用于分配团队人员的操作权限
-export FRONTEND_PROJECT_NAME="frontend"
+export FRONTEND_PROJECT="bank"
+
+# 前端项目
+export FRONTEND_APPLICATION_NAME="bank"
 
 # 前端应用的名称
-export FRONTEND_APPLICATION_NAME="bank-frontend"
+export APPLICATION_NAME="bank-frontend"
 
 # 获取Git Repo URL
 if [ -z "$BRANCH" ]; then
@@ -114,12 +117,12 @@ spec:
     # 定义角色权限
     policies:
     # 允许 ROLE_NAME 角色对该命名空间下的项目进行: 获取/创建/同步/删除/操作
-    - p, proj:${FRONTEND_PROJECT_NAME}:${ROLE_NAME}, applications, get, ${FRONTEND_PROJECT_NAME}/*, allow
-    - p, proj:${FRONTEND_PROJECT_NAME}:${ROLE_NAME}, applications, create, ${FRONTEND_PROJECT_NAME}/*, allow
-    - p, proj:${FRONTEND_PROJECT_NAME}:${ROLE_NAME}, applications, sync, ${FRONTEND_PROJECT_NAME}/*, allow
-    - p, proj:${FRONTEND_PROJECT_NAME}:${ROLE_NAME}, applications, delete, ${FRONTEND_PROJECT_NAME}/*, allow
+    - p, proj:${FRONTEND_PROJECT}:${ROLE_NAME}, applications, get, ${APPLICATION_NAME}/*, allow
+    - p, proj:${FRONTEND_PROJECT}:${ROLE_NAME}, applications, create, ${APPLICATION_NAME}/*, allow
+    - p, proj:${FRONTEND_PROJECT}:${ROLE_NAME}, applications, sync, ${APPLICATION_NAME}/*, allow
+    - p, proj:${FRONTEND_PROJECT}:${ROLE_NAME}, applications, delete, ${APPLICATION_NAME}/*, allow
     # 允许查看集群信息
-    - p, proj:${FRONTEND_PROJECT_NAME}:${ROLE_NAME}, clusters, get, ${FRONTEND_PROJECT_NAME}/*, allow
+    - p, proj:${FRONTEND_PROJECT}:${ROLE_NAME}, clusters, get, ${FRONTEND_PROJECT_NAME}/*, allow
   orphanedResources:
     warn: true
 # argocd proj create -f create-frontend-proj.yml

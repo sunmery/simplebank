@@ -1,0 +1,17 @@
+# 定义PV用于HTML存储
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-claim1
+spec:
+  capacity:
+    storage: 100Mi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  # storageClassName: nfs-csi # 如果不使用默认的SC, 则需要手动编写, 根据你使用的SC不同, 这份PV清单参数仅供参考
+  nfs:
+    path: /mnt/data/full/kubernetes/ci/nginx/pv  # NFS共享的路径
+    server: 116.213.43.175  # NFS服务器地址
+---
