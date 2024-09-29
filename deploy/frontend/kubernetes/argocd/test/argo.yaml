@@ -1,9 +1,9 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: bank1
+  name: bank12
 #   通常需要将资源添加到 argocd 命名空间。
-  namespace: argocd
+  namespace: default
 spec:
   project: default
   source:

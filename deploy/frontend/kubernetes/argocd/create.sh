@@ -7,6 +7,7 @@ CLUSTER_URL="https://116.213.43.175:6443"
 REPO_URL="https://github.com/sunmery/simplebank.git"
 APPLICATION_NAME="bank-frontend1"
 NAMESPACE="bank1"
+M_PATH="deploy/frontend/kubernetes/argocd/test"
 
 # 创建项目
 argocd proj create ${PROJECT}
@@ -52,7 +53,7 @@ argocd proj add-destination ${PROJECT} ${CLUSTER_URL} ${PROJECT}
 argocd app create ${APPLICATION_NAME} \
 --project ${PROJECT} \
 --repo ${REPO_URL} \
---path deploy/frontend/kubernetes/argocd \
+--path ${M_PATH} \
 --dest-server ${CLUSTER_URL} \
 --dest-namespace ${NAMESPACE} \
 --validate
