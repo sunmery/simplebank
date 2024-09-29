@@ -4,6 +4,8 @@ metadata:
   name: bank-frontend  # 项目名称
   namespace: bank # 项目所在的命名空间，默认为argocd，可根据实际情况调整
 spec:
+  # 项目名称
+  project: bank
   # 项目描述
   description: "This project is for managing FRONTEND applications"
 
