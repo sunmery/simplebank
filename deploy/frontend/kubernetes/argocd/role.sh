@@ -3,7 +3,7 @@
 set -o posix errexit -o pipefail
 
 # argocd所在的的命名空间
-ARGOCD_NAMESPACE="argo"
+ARGOCD_NAMESPACE="argocd"
 # 角色名称, 用于管理项目
 ROLE_NAME="admin"
 

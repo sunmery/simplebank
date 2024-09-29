@@ -89,6 +89,10 @@ spec:
       kind: Service
     - group: '*'
       kind: Namespace
+    - group: '*'
+      kind: PersistentVolume
+    - group: '*'
+      kind: PersistentVolumeClaim
   # 源代码仓库配置
   sourceRepos:
   - ${PROJECT_GIT_URL} # 允许使用的Git仓库地址，根据实际情况修改
