@@ -12,7 +12,7 @@ spec:
     path: deploy/frontend/kubernetes/argocd/test
   destination:
     server: https://116.213.43.175:6443
-    namespace: bank1
+    namespace: default
   namespaceResourceBlacklist:
     - group: ''
       kind: ResourceQuota
