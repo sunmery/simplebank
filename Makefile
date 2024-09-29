@@ -3,7 +3,8 @@
 # 生成sql代码
 deploy-frontend:
 	./deploy/frontend/kubernetes/argocd/init.sh
-	#./deploy/frontend/kubernetes/argocd/role.sh
+	chmod +x deploy/frontend/kubernetes/argocd/role.sh
+	./deploy/frontend/kubernetes/argocd/role.sh
 	./deploy/frontend/kubernetes/argocd/deploy.sh
 
 .PHONY: deploy-frontend

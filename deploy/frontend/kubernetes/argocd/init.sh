@@ -88,20 +88,20 @@ spec:
 
   # 拒绝创建所有名称空间作用域的资源. 但除了以下的Kind除外:
   namespaceResourceWhitelist:
+#    - group: '*'
+#      kind: '*'
     - group: '*'
-      kind: '*'
-    #- group: '*'
-    #  kind: Deployment
-    #- group: '*'
-    #  kind: StatefulSet
-    #- group: '*'
-    #  kind: Service
-    #- group: '*'
-    #  kind: Namespace
-    #- group: '*'
-    #  kind: PersistentVolume
-    #- group: '*'
-    #  kind: PersistentVolumeClaim
+      kind: Deployment
+    - group: '*'
+      kind: StatefulSet
+    - group: '*'
+      kind: Service
+    - group: '*'
+      kind: Namespace
+    - group: '*'
+      kind: PersistentVolume
+    - group: '*'
+      kind: PersistentVolumeClaim
   # 源代码仓库配置
   sourceRepos:
   - ${PROJECT_GIT_URL} # 允许使用的Git仓库地址，根据实际情况修改

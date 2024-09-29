@@ -6,6 +6,7 @@ set -o posix errexit -o pipefail
 ARGOCD_NAMESPACE="argocd"
 # 角色名称, 用于管理项目
 ROLE_NAME="admin"
+PROJECT="bank"
 
 # 创建argocd的Project(项目)的Role(角色)
 cat > deploy/frontend/kubernetes/argocd/project-role.yml <<EOF
@@ -35,8 +36,7 @@ data:
     p, role:admin, applications, *, *, allow
     p, role:${ROLE_NAME}, applications, *, *, allow
     g, admin, role:admin
-    g, ${ROLE_NAME}, proj:frontend:${ROLE_NAME}
-    g, ${ROLE_NAME}, proj:backend:${ROLE_NAME}
+    g, ${ROLE_NAME}, proj:${PROJECT}:${ROLE_NAME}
 # kubectl apply -f argocd-rbac-cm -n ${ARGOCD_NAMESPACE}
 EOF
 
