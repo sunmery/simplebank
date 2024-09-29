@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
   name: bank # 项目名称
-  namespace: argocd # 项目所在的命名空间，默认为argocd，可根据实际情况调整
+  namespace: bank # 项目所在的命名空间，默认为argocd，可根据实际情况调整
 spec:
   # 项目描述
   description: "This project is for managing FRONTEND applications"
