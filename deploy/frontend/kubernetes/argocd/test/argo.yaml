@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bank1
+#   通常需要将资源添加到 argocd 命名空间。
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/sunmery/simplebank.git
+    targetRevision: main
+    path: deploy/frontend/kubernetes/argocd/test
+  destination:
+    server: https://116.213.43.175:6443
+    namespace: bank1
+  namespaceResourceBlacklist:
+    - group: ''
+      kind: ResourceQuota
+    - group: ''
+      kind: LimitRange
+    - group: ''
+      kind: NetworkPolicy

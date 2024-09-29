@@ -75,23 +75,13 @@ argocd proj add-source ${PROJECT} ${REPO_URL}
 # argocd proj remove-destination <PROJECT> <CLUSTER>,<NAMESPACE>
 argocd proj add-destination ${PROJECT} ${CLUSTER_URL} ${PROJECT}
 
-# 创建仓库秘钥
-#cat > gitlab-secret.yml <<EOF
-#apiVersion: v1
-#kind: Secret
-#metadata:
-#  name: argocd-example-apps
-#  labels:
-#    argocd.argoproj.io/secret-type: repository
-#type: Opaque
-#stringData:
-#  # Project scoped
-#  project: my-project1
-#  name: argocd-example-apps
-#  url: https://github.com/argoproj/argocd-example-apps.git
-#  username: ****
-#  password: ****
-#EOF
+# 查看已添加的git仓库
+argocd repo list
+
+# 通常 GitOps 使用的仓库是私有仓库，所以添加仓库时一般用 --ssh-private-key-path 指定下 SSH 密钥，
+# 以便让 argocd 能够正常拉取到 Git 仓库。
+#argocd repo add --ssh-private-key-path $HOME/.ssh/id_rsa --insecure-skip-server-verification git@yourgit.com:your-org/your-repo.git
+
 
 # 创建APP
 argocd app create ${APPLICATION_NAME} \
