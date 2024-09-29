@@ -1,17 +1,15 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: bank # 项目名称
-  namespace: bank # 项目所在的命名空间，默认为argocd，可根据实际情况调整
+  name: bank1 # 项目名称
+  namespace: bank1 # 项目所在的命名空间，默认为argocd，可根据实际情况调整
 spec:
-  # 项目名称
-  project: bank
   # 项目描述
   description: "This project is for managing FRONTEND applications"
 
   # 允许应用部署到的命名空间列表
   destinations:
-  - namespace: bank
+  - namespace: bank1
     server: https://116.213.43.175:6443 # 集群API地址，示例值需替换为实际地址
 
   # 允许的目标 K8s 资源类型
@@ -51,7 +49,7 @@ spec:
       kind: PersistentVolumeClaim
   # 源代码仓库配置
   sourceRepos:
-  - https://github.com/sunmery/simple_bank.git # 允许使用的Git仓库地址，根据实际情况修改
+  - https://github.com/sunmery/simplebank.git # 允许使用的Git仓库地址，根据实际情况修改
 
   # 角色与成员
   roles:
@@ -60,13 +58,13 @@ spec:
     # 注意这里的subjects配置应当符合Argo CD的RBAC规范，例如使用proj:frontend:admin
     # 定义角色权限
     policies:
-    # 允许 ROLE_NAME 角色对该命名空间下的项目进行: 获取/创建/同步/删除/操作
-    - p, proj:bank:admin, applications, get, bank-frontend/*, allow
-    - p, proj:bank:admin, applications, create, bank-frontend/*, allow
-    - p, proj:bank:admin, applications, sync, bank-frontend/*, allow
-    - p, proj:bank:admin, applications, delete, bank-frontend/*, allow
+    # 允许 ROLE_NAME 角色对该命名空间下的项目进行: 查询/创建/同步/删除/操作
+    - p, proj:bank1:admin, applications, get, bank-frontend1/*, allow
+    - p, proj:bank1:admin, applications, create, bank-frontend1/*, allow
+    - p, proj:bank1:admin, applications, sync, bank-frontend1/*, allow
+    - p, proj:bank1:admin, applications, delete, bank-frontend1/*, allow
     # 允许查看集群信息
-    - p, proj:bank:admin, clusters, get, /*, allow
+    - p, proj:bank1:admin, clusters, get, /*, allow
   orphanedResources:
     warn: true
 # argocd proj create -f create-frontend-proj.yml
