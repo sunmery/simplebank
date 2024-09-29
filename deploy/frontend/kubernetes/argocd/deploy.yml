@@ -78,24 +78,24 @@ spec:
           image: ccr.ccs.tencentyun.com/lisa/frontend:v0.6.0  # 替换成您的镜像
           ports:
             - containerPort: 80
-            - containerPort: 443
-          volumeMounts:
-            - name: html-volume
-              mountPath: /etc/nginx/html
-            - name: ssl-volume
-              mountPath: /etc/nginx/ssl
-            - name: conf-volume
-              mountPath: /etc/nginx/conf.d
-      volumes:
-        - name: html-volume
-          persistentVolumeClaim:
-            claimName: html-volume-claim
-        - name: ssl-volume
-          secret:
-            secretName: nginx-ssl
-        - name: conf-volume
-          configMap:
-            name: nginx-conf
+#            - containerPort: 443
+#          volumeMounts:
+#            - name: html-volume
+#              mountPath: /etc/nginx/html
+#            - name: ssl-volume
+#              mountPath: /etc/nginx/ssl
+#            - name: conf-volume
+#              mountPath: /etc/nginx/conf.d
+#      volumes:
+#        - name: html-volume
+#          persistentVolumeClaim:
+#            claimName: html-volume-claim
+#        - name: ssl-volume
+#          secret:
+#            secretName: nginx-ssl
+#        - name: conf-volume
+#          configMap:
+#            name: nginx-conf
 ---
 apiVersion: v1
 kind: Service
