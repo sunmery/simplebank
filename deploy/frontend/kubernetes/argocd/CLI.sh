@@ -88,7 +88,7 @@ stringData:
 EOF
 
 # 创建APP
-argocd app create frontend \
+argocd app create bank-frontend \
 --project simplebank \
 --repo https://github.com/sunmery/simplebank.git \
 --path deploy/frontend/kubernetes/argocd \

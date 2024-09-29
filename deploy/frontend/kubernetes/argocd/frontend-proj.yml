@@ -17,29 +17,34 @@ spec:
     - group: '*'
       #kind: '*'
       kind: Namespace
-
-  # 允许创建所有命名空间范围的资源: ResourceQuota、LimitRange、NetworkPolicy 除外
-  namespaceResourceBlacklist:
-    - group: '*'
-      kind: ResourceQuota
-    - group: '*'
-      kind: LimitRange
-    - group: '*'
-      kind: NetworkPolicy
-  # 拒绝创建所有名称空间作用域的资源. 但除了以下的Kind除外:
-  namespaceResourceWhitelist:
-    - group: '*'
-      kind: Deployment
-    - group: '*'
-      kind: StatefulSet
-    - group: '*'
-      kind: Service
-    - group: '*'
-      kind: Namespace
     - group: '*'
       kind: PersistentVolume
     - group: '*'
       kind: PersistentVolumeClaim
+  # 允许创建所有命名空间范围的资源: ResourceQuota、LimitRange、NetworkPolicy 除外
+  #  namespaceResourceBlacklist:
+  #    - group: '*'
+  #      kind: ResourceQuota
+  #    - group: '*'
+  #      kind: LimitRange
+  #    - group: '*'
+  #      kind: NetworkPolicy
+  #    - group: '*'
+
+  # 拒绝创建所有名称空间作用域的资源. 但除了以下的Kind除外:
+  #  namespaceResourceWhitelist:
+  #    - group: '*'
+  #      kind: Deployment
+  #    - group: '*'
+  #      kind: StatefulSet
+  #    - group: '*'
+  #      kind: Service
+  #    - group: '*'
+  #      kind: Namespace
+  #    - group: '*'
+  #      kind: PersistentVolume
+  #    - group: '*'
+  #      kind: PersistentVolumeClaim
   # 源代码仓库配置
   sourceRepos:
   - https://github.com/sunmery/simple_bank.git # 允许使用的Git仓库地址，根据实际情况修改

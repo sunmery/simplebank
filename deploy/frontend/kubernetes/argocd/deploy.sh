@@ -9,20 +9,21 @@ PORT2="443"
 IMAGE="ccr.ccs.tencentyun.com/lisa/frontend:v0.6.0"
 PORT_TYPE="NodePort"
 DOMAIN="lookeke.com"
+NFS_ADDRESS="116.213.43.175"
 
-cat > deploy/frontend/kubernetes/argocd/secret.yml <<EOF
-# 存储TLS证书和密钥
-apiVersion: v1
-kind: Secret
-metadata:
-  name: nginx-ssl
-  namespace: frontend
-type: kubernetes.io/tls
-data:
-  tls.crt: base64编码的证书数据
-  tls.key: base64编码的密钥数据
-# kubectl create secret tls domain --cert  tls.crt --key tls.key -n frontend
-EOF
+#cat > deploy/frontend/kubernetes/argocd/secret.yml <<EOF
+## 存储TLS证书和密钥
+#apiVersion: v1
+#kind: Secret
+#metadata:
+#  name: nginx-ssl
+#  namespace: ${NAMESPACE}
+#type: kubernetes.io/tls
+#data:
+#  tls.crt: base64编码的证书数据
+#  tls.key: base64编码的密钥数据
+## kubectl create secret tls domain --cert  tls.crt --key tls.key -n frontend
+#EOF
 
 cat > deploy/frontend/kubernetes/argocd/pv.yml <<EOF
 # 定义PV用于HTML存储
@@ -40,7 +41,7 @@ spec:
   # storageClassName: nfs-csi # 如果不使用默认的SC, 则需要手动编写, 根据你使用的SC不同, 这份PV清单参数仅供参考
   nfs:
     path: /mnt/data/full/kubernetes/ci/nginx/pv  # NFS共享的路径
-    server: 192.168.2.160  # NFS服务器地址
+    server: ${NFS_ADDRESS}  # NFS服务器地址
 ---
 EOF
 
@@ -50,7 +51,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: html-volume-claim
-  namespace: frontend
+  namespace: ${NAMESPACE}
 spec:
   accessModes:
     - ReadWriteOnce
@@ -66,14 +67,14 @@ cat > deploy/frontend/kubernetes/argocd/deploy.yml <<EOF
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: frontend
+  name: ${NAMESPACE}
 ---
 # 储Nginx配置
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: nginx-conf
-  namespace: frontend
+  namespace: ${NAMESPACE}
 data:
   nginx.conf: |
     server {
@@ -124,7 +125,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-deployment
-  namespace: frontend
+  namespace: ${NAMESPACE}
   labels:
     app: nginx
 spec:
@@ -164,10 +165,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend-service
-  namespace: frontend
+  name: ${NAME}-service
+  namespace: ${NAMESPACE}
 spec:
-  type: LoadBalancer
+  type: ${PORT_TYPE}
   ports:
     - port: 80
       targetPort: 80

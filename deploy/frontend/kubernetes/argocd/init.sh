@@ -23,10 +23,12 @@ export PROJECT_GIT_URL="https://github.com/sunmery/simple_bank.git"
 
 # Kubernetes 资源清单在仓库中的路径, 相对于仓库根目录的路径
 export FRONTEND_DEPLOY_PATH="deploy/frontend/kubernetes/argocd"
+
 # 前端命名空间, 不需要额外创建命名空间选择default即可
 export FRONTEND_NAMESPACE="bank"
 # argocd中的前端项目名, 用于分配团队人员的操作权限
 export FRONTEND_PROJECT_NAME="frontend"
+
 # 前端应用的名称
 export FRONTEND_APPLICATION_NAME="bank-frontend"
 
@@ -70,29 +72,34 @@ spec:
     - group: '*'
       #kind: '*'
       kind: Namespace
-
-  # 允许创建所有命名空间范围的资源: ResourceQuota、LimitRange、NetworkPolicy 除外
-  namespaceResourceBlacklist:
-    - group: '*'
-      kind: ResourceQuota
-    - group: '*'
-      kind: LimitRange
-    - group: '*'
-      kind: NetworkPolicy
-  # 拒绝创建所有名称空间作用域的资源. 但除了以下的Kind除外:
-  namespaceResourceWhitelist:
-    - group: '*'
-      kind: Deployment
-    - group: '*'
-      kind: StatefulSet
-    - group: '*'
-      kind: Service
-    - group: '*'
-      kind: Namespace
     - group: '*'
       kind: PersistentVolume
     - group: '*'
       kind: PersistentVolumeClaim
+  # 允许创建所有命名空间范围的资源: ResourceQuota、LimitRange、NetworkPolicy 除外
+  #  namespaceResourceBlacklist:
+  #    - group: '*'
+  #      kind: ResourceQuota
+  #    - group: '*'
+  #      kind: LimitRange
+  #    - group: '*'
+  #      kind: NetworkPolicy
+  #    - group: '*'
+
+  # 拒绝创建所有名称空间作用域的资源. 但除了以下的Kind除外:
+  #  namespaceResourceWhitelist:
+  #    - group: '*'
+  #      kind: Deployment
+  #    - group: '*'
+  #      kind: StatefulSet
+  #    - group: '*'
+  #      kind: Service
+  #    - group: '*'
+  #      kind: Namespace
+  #    - group: '*'
+  #      kind: PersistentVolume
+  #    - group: '*'
+  #      kind: PersistentVolumeClaim
   # 源代码仓库配置
   sourceRepos:
   - ${PROJECT_GIT_URL} # 允许使用的Git仓库地址，根据实际情况修改
