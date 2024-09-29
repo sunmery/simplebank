@@ -3,7 +3,7 @@ kind: Application
 metadata:
   name: bank12
 #   通常需要将资源添加到 argocd 命名空间。
-  namespace: default
+  namespace: test1
 spec:
   project: default
   source:
@@ -12,7 +12,7 @@ spec:
     path: deploy/frontend/kubernetes/argocd/test
   destination:
     server: https://116.213.43.175:6443
-    namespace: default
+    namespace: test1
   namespaceResourceBlacklist:
     - group: ''
       kind: ResourceQuota
