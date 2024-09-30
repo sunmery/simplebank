@@ -22,7 +22,7 @@ import (
 
 func TestAccountAPI(t *testing.T) {
 	// mock random account
-	account := randomAccount()
+	account := randomAccount(t)
 	fmt.Printf("account %v", account)
 
 	// 测试用例集合, 存储数据可能的情况
@@ -103,13 +103,20 @@ func TestAccountAPI(t *testing.T) {
 	}
 }
 
-func randomAccount() db.Accounts {
-	return db.Accounts{
+func randomAccount(t *testing.T) db.Accounts {
+	account := db.Accounts{
 		ID:       pkg.RandomInt(1, 10),
 		Owner:    pkg.RandomString(5),
 		Balance:  pkg.RandomInt(1, 100),
 		Currency: pkg.RandomCurrency(),
 	}
+	require.NotEmpty(t, account)
+	require.NotZero(t, account.ID)
+	require.NotEmpty(t, account.Owner)
+	require.NotZero(t, account.Balance)
+	require.NotEmpty(t, account.Currency)
+
+	return account
 }
 
 // 测试Body体的数据是否与生成的账户数据相同

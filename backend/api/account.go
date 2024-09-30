@@ -83,6 +83,14 @@ func (s *Server) getAccount(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+	payload := ctx.MustGet(constants.AuthorizationPayloadKey).(*token.Payload)
+	if account.Owner != payload.Username {
+		ctx.JSON(http.StatusForbidden, gin.H{
+			"error": errors.New("该账户不属于该用户").Error(),
+		})
+		return
+	}∂
+
 	ctx.JSON(http.StatusOK, account)
 }
 

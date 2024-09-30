@@ -52,7 +52,7 @@ PROJECT="simplebank"
 CLUSTER_URL="https://116.213.43.175:6443"
 REPO_URL="https://github.com/sunmery/simplebank.git"
 APPLICATION_NAME="bank-frontend1"
-NAMESPACE="ban1"
+NAMESPACE="bank1"
 
 # 创建项目
 argocd proj create ${PROJECT}

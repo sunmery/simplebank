@@ -4,12 +4,11 @@ import (
 	"context"
 	"log"
 	"os"
+	db "simple_bank/db/sqlc"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
-
-	db "simple_bank/db/sqlc"
 
 	"simple_bank/pkg"
 

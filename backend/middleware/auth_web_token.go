@@ -15,7 +15,7 @@ func AuthWebTokenMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 		header := ctx.GetHeader(constants.AuthorizationHeaderKey)
 		if header == "" || len(header) == 0 {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": errors.New("未提供 authorization 标头"),
+				"error": errors.New("未提供 authorization 标头").Error(),
 			})
 			return
 		}
@@ -24,15 +24,17 @@ func AuthWebTokenMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 		// 判断切片是否合法
 		if len(fields) != 2 {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": errors.New("授权标头格式无效"),
+				"error": errors.New("授权标头格式无效").Error(),
 			})
+			return
 		}
 
 		// 判断切片是否为服务器支持的授权类型
 		if strings.ToLower(fields[0]) != constants.AuthorizationHeaderType {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": errors.New("服务器不支持的授权类型"),
+				"error": errors.New("服务器不支持的授权类型").Error(),
 			})
+			return
 		}
 
 		// 获取Authorization头的值
@@ -42,6 +44,7 @@ func AuthWebTokenMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": err.Error(),
 			})
+			return
 		}
 		ctx.Set(constants.AuthorizationPayloadKey, payload)
 		ctx.Next()

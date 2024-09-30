@@ -88,8 +88,9 @@ type Querier interface {
 	//
 	//  SELECT id, owner, balance, currency, created_at
 	//  FROM accounts
+	//  WHERE owner = $1
 	//  ORDER BY id
-	//  LIMIT $1 OFFSET $2
+	//  LIMIT $2 OFFSET $3
 	ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Accounts, error)
 	//ListEntry
 	//

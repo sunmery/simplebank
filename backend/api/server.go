@@ -48,7 +48,7 @@ func NewServer(config *config.Config, store db.Store) (*Server, error) {
 }
 
 func (s *Server) setupRouter() {
-// 	gin.SetMode(gin.ReleaseMode)
+	// 	gin.SetMode(gin.ReleaseMode)
 	routes := gin.Default()
 	routes.Use(middleware.Cors())
 
@@ -59,7 +59,7 @@ func (s *Server) setupRouter() {
 	routes.POST("/users/login", s.loginUser)
 
 	// 查询单个用户
-	authGroup := routes.Group("/auth").Use(middleware.AuthWebTokenMiddleware(s.tokenMake))
+	authGroup := routes.Group("/").Use(middleware.AuthWebTokenMiddleware(s.tokenMake))
 
 	authGroup.GET("/users", s.GetUser)
 

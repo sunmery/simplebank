@@ -3,15 +3,43 @@ package db
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"simple_bank/config"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
 )
 
+var sqlStore Store
+
+func newDB(t *testing.T) Store {
+	cfg, err := config.LoadConfig("../../")
+	require.NoError(t, err)
+	require.NotNil(t, cfg)
+	require.NotEmpty(t, cfg)
+
+	testDB, err2 := pgxpool.New(context.Background(), cfg.DBSource)
+	require.NoError(t, err2)
+	require.NotNil(t, testDB)
+	require.NotEmpty(t, testDB)
+
+	// defer testDB.Close()
+
+	testQueries := New(testDB)
+	require.NotEmpty(t, testQueries)
+	require.NotNil(t, testQueries)
+
+	store := NewStore(testDB)
+
+	return store
+}
+
 func TestTransferTx(t *testing.T) {
+	sqlStore = newDB(t)
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
+
 	fmt.Printf("交易前的余额: account1 :%d, account2: %d \n", account1.Balance, account2.Balance)
 
 	n := 5
@@ -22,7 +50,7 @@ func TestTransferTx(t *testing.T) {
 
 	for i := 0; i < n; i++ {
 		go func() {
-			result, err := testStore.TransferTx(context.Background(), TransfersParams{
+			result, err := sqlStore.TransferTx(context.Background(), TransfersParams{
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
 				Amount:        amount,
@@ -54,7 +82,7 @@ func TestTransferTx(t *testing.T) {
 		require.NotZero(t, transfer.ID)
 		require.NotZero(t, transfer.CreatedAt)
 
-		_, err = store.GetTransfer(context.Background(), transfer.ID)
+		_, err = sqlStore.GetTransfer(context.Background(), transfer.ID)
 		require.NoError(t, err)
 
 		// 检查条目操作
@@ -64,7 +92,7 @@ func TestTransferTx(t *testing.T) {
 		require.Equal(t, -amount, fromEntry.Amount)
 		require.NotZero(t, fromEntry.ID)
 		require.NotZero(t, fromEntry.CreatedAt)
-		_, err = store.GetEntry(context.Background(), fromEntry.ID)
+		_, err = sqlStore.GetEntry(context.Background(), fromEntry.ID)
 		require.NoError(t, err)
 
 		toEntry := result.ToEntry
@@ -74,7 +102,7 @@ func TestTransferTx(t *testing.T) {
 		require.NotZero(t, toEntry.ID)
 		require.NotZero(t, toEntry.CreatedAt)
 		require.WithinDuration(t, toEntry.CreatedAt, account2.CreatedAt, time.Second)
-		_, err = store.GetEntry(context.Background(), toEntry.ID)
+		_, err = sqlStore.GetEntry(context.Background(), toEntry.ID)
 		require.NoError(t, err)
 
 		// 检查账户
@@ -118,12 +146,12 @@ func TestTransferTx(t *testing.T) {
 
 	// 检查账户最终更新的余额
 	// 从数据库获取更新后的账户1
-	updateAccount1, err := store.GetAccount(context.Background(), account1.ID)
+	updateAccount1, err := sqlStore.GetAccount(context.Background(), account1.ID)
 	require.NoError(t, err)
 	require.Equal(t, account1.ID, updateAccount1.ID)
 	// 与原始的余额进行对比, account1是支出, 则余额应该是原始余额支出后的余额
 
-	updateAccount2, err2 := store.GetAccount(context.Background(), account2.ID)
+	updateAccount2, err2 := sqlStore.GetAccount(context.Background(), account2.ID)
 	require.NoError(t, err2)
 
 	// fmt.Printf("交易后的余额: account1 :%d, account2: %d \n", account1.Balance, account2.Balance)
@@ -133,7 +161,6 @@ func TestTransferTx(t *testing.T) {
 }
 
 func TestTransferTxDeadlock(t *testing.T) {
-	store := NewStore(testDB)
 
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
@@ -157,7 +184,7 @@ func TestTransferTxDeadlock(t *testing.T) {
 		}
 
 		go func() {
-			_, err := store.TransferTx(context.Background(), TransfersParams{
+			_, err := sqlStore.TransferTx(context.Background(), TransfersParams{
 				FromAccountID: fromAccountID,
 				ToAccountID:   toAccountID,
 				Amount:        amount,
@@ -175,10 +202,10 @@ func TestTransferTxDeadlock(t *testing.T) {
 
 	// 检查账户最终更新的余额
 	// 从数据库获取更新后的账户1
-	updateAccount1, err := store.GetAccount(context.Background(), account1.ID)
+	updateAccount1, err := sqlStore.GetAccount(context.Background(), account1.ID)
 	require.NoError(t, err)
 	require.Equal(t, account1.ID, updateAccount1.ID)
-	updateAccount2, err2 := store.GetAccount(context.Background(), account2.ID)
+	updateAccount2, err2 := sqlStore.GetAccount(context.Background(), account2.ID)
 	require.NoError(t, err2)
 
 	// fmt.Printf("交易后的余额: account1 :%d, account2: %d \n", account1.Balance, account2.Balance)

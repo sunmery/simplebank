@@ -9,14 +9,16 @@ import (
 )
 
 func TestCreateAccount(t *testing.T) {
+
 	account := createRandomAccount(t)
 	require.NotNil(t, account)
 }
 
 func TestGetAccount(t *testing.T) {
+	sqlStore = newDB(t)
 	ctx := context.Background()
 	account1 := createRandomAccount(t)
-	account2, err := testQueries.GetAccount(ctx, account1.ID)
+	account2, err := sqlStore.GetAccount(ctx, account1.ID)
 	require.NoError(t, err)
 	require.NotNil(t, account2)
 	require.Equal(t, account1.Owner, account2.Owner)
@@ -25,11 +27,12 @@ func TestGetAccount(t *testing.T) {
 }
 
 func TestUpdateAccount(t *testing.T) {
+	sqlStore = newDB(t)
 	ctx := context.Background()
 	account := createRandomAccount(t)
 
 	balance := pkg.RandomInt(1, 100)
-	result, err := testQueries.UpdateAccount(ctx, UpdateAccountParams{
+	result, err := sqlStore.UpdateAccount(ctx, UpdateAccountParams{
 		Balance: balance,
 		ID:      account.ID,
 	})
@@ -43,12 +46,14 @@ func TestUpdateAccount(t *testing.T) {
 }
 
 func TestListAccount(t *testing.T) {
+	sqlStore = newDB(t)
 	var lastAccount Accounts
 	for i := 0; i < 10; i++ {
 		lastAccount = createRandomAccount(t)
 	}
-	accounts, err := testQueries.ListAccounts(context.Background(), ListAccountsParams{
-		// Owner:  lastAccount.Owner,
+
+	accounts, err := sqlStore.ListAccounts(context.Background(), ListAccountsParams{
+		Owner:  lastAccount.Owner,
 		Limit:  5,
 		Offset: 0,
 	})
@@ -57,10 +62,12 @@ func TestListAccount(t *testing.T) {
 	for _, account := range accounts {
 		require.NotEmpty(t, account)
 		require.NotEmpty(t, lastAccount)
+		require.Equal(t, lastAccount.Owner, account.Owner)
 	}
 }
 
 func createRandomAccount(t *testing.T) Accounts {
+	sqlStore = newDB(t)
 	ctx := context.Background()
 	user := createRandomUser(t)
 	require.NotEmpty(t, user)
@@ -69,7 +76,7 @@ func createRandomAccount(t *testing.T) Accounts {
 		Balance:  pkg.RandomInt(11, 100),
 		Currency: pkg.RandomCurrency(),
 	}
-	account, err := testQueries.CreateAccount(ctx, arg)
+	account, err := sqlStore.CreateAccount(ctx, arg)
 	if err != nil {
 		t.Fatalf("account generate error is: '%v'", err)
 	}
