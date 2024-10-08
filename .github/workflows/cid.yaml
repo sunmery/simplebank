@@ -34,9 +34,11 @@ jobs:
       -
         # 登录到容器注册表
         name: Login Cloud Registry
-        run: echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{secrets.REGISTRY}} --username=${{secrets.REGISTRY_USERNAME}} --password-stdin
+        run: echo "${ secrets.REGISTRY_PASSWORD }" | docker login ${{secrets.REGISTRY}} --username=${{secrets.REGISTRY_USERNAME}} --password-stdin
 
-      - name: Build tag and push image to Cloud Registry
+      -
+        # 构建, 标记, 推送镜像到容器注册表
+        name: Build tag and push image to Cloud Registry
         env:
           VERSION: v2.0.0
           PORT: 8080
