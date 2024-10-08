@@ -1,7 +1,7 @@
 # This workflow will build a golang project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
 
-name: CI
+name: Deploy to production
 
 on:
   push:
@@ -10,6 +10,33 @@ on:
     branches: [ "main" ]
 
 jobs:
+
+  build:
+    name: Build image
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Login Cloud Registry
+        run: docker login ${{secrets.REGISTRY}} --username=${{secrets.REGISTRY_USERNAME}} --password=${{secrets.REGISTRY_PASSWORD}}
+
+      - name: Build, tag, and push image to Cloud Registry
+        var:
+          version: v2.0.0
+          port: 8080
+        run: |
+          docker build \
+            --progress=plain \
+            -t ${{secrets.REGISTRY_REPOSITOTY}}:$version . \
+            --build-arg GOOS=darwin \
+            --build-arg ARCH=arm64 \
+            --build-arg CGO_ENABLED=0 \
+            --build-arg GO_IMAGE=golang:1.23.1-alpine3.20 \
+            --build-arg version=$version \
+            --build-arg PORT=$port
+          docker tag ${{secrets.REGISTRY_REPOSITOTY}}:$version ${{secrets.REGISTRY}}/${{secrets.REGISTRY_REPOSITOTY}}:$version
+          docker push ${{secrets.REGISTRY}}/${{secrets.REGISTRY_REPOSITOTY}}:$version
+
 
   test:
     # Service containers to run with `container-job`
@@ -21,11 +48,11 @@ jobs:
         # Provide the password for postgres
         env:
           # 数据库用户名
-          POSTGRES_USER: postgres
+          POSTGRES_USER: ${{secrets.POSTGRES_USER}}
           # 数据库用户密码
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
           # 此可选环境变量可用于为首次启动映像时创建的默认数据库定义不同的名称。如果未指定，则将使用 POSTGRES_USER 的值。
-          POSTGRES_DB: simple_bank
+          POSTGRES_DB: ${{secrets.POSTGRES_DB}}
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
@@ -51,7 +78,17 @@ jobs:
           which migrate
 
       - name: Run database migrate
-        run: make migrate-up
+        run: |
+          pwd
+          cd ../
+          pwd
+          cd backend
+          pwd
+          make migrate-up
 
       - name: Test
-        run: make test
+        run: |
+          cd backend
+          make test
+
+      - name: Build in Kubernetes

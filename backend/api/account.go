@@ -89,7 +89,7 @@ func (s *Server) getAccount(ctx *gin.Context) {
 			"error": errors.New("该账户不属于该用户").Error(),
 		})
 		return
-	}∂
+	}
 
 	ctx.JSON(http.StatusOK, account)
 }
@@ -109,7 +109,10 @@ func (s *Server) listAccount(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+	payload := ctx.MustGet(constants.AuthorizationPayloadKey).(*token.Payload)
+
 	arg := db.ListAccountsParams{
+		Owner:  payload.Username,
 		Limit:  int64(req.PageSize),
 		Offset: int64((req.PageID - 1) * req.PageSize),
 	}

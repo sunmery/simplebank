@@ -6,7 +6,7 @@ sqlc:
 
 # 启动postgres容器
 postgres-up:
-	docker compose -f postgres-compose.yml up -d
+	docker compose -f ./deploy/database/postgres-compose.yml up -d
 
 # 停止postgres容器
 postgres-down:

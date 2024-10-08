@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"simple_bank/constants"
+	"simple_bank/pkg/token"
 
 	db "simple_bank/db/sqlc"
 
@@ -27,10 +29,22 @@ func (s *Server) createTransfer(ctx *gin.Context) {
 	}
 
 	// 创建转账记录时, 需要判断传入的,发起者的,接受者货币类型,三者一致才可以创建转账条目
-	if !s.validateCurrent(ctx, req.FromAccountID, req.Currency) {
+	fromAccount, valid := s.validateCurrent(ctx, req.FromAccountID, req.Currency)
+	if !valid {
 		return
 	}
-	if !s.validateCurrent(ctx, req.ToAccountID, req.Currency) {
+
+	// 比较账户的Owner与gin ctx token的payload的Username
+	// 如果一致, 说明登录的用户是该账户的拥有者
+	// 不一致抛出异常
+	payload := ctx.MustGet(constants.AuthorizationPayloadKey).(*token.Payload)
+	if fromAccount.Owner != payload.Username {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": errorResponse(errors.New("登录的用户非该账户的拥有者"))})
+		return
+	}
+
+	_, valid = s.validateCurrent(ctx, req.ToAccountID, req.Currency)
+	if valid {
 		return
 	}
 
@@ -49,24 +63,24 @@ func (s *Server) createTransfer(ctx *gin.Context) {
 }
 
 // 验证货币类型
-func (s *Server) validateCurrent(ctx *gin.Context, accountID int64, currency string) bool {
-	toAccount, err := s.store.GetAccount(ctx, accountID)
+func (s *Server) validateCurrent(ctx *gin.Context, accountID int64, currency string) (db.Accounts, bool) {
+	account, err := s.store.GetAccount(ctx, accountID)
 	if err != nil {
 		// 数据库不存在的情况
 		if errors.Is(err, sql.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return false
+			return account, false
 		}
 		// 服务器内部错误
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return false
+		return account, false
 	}
-	if currency != toAccount.Currency {
+	if currency != account.Currency {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 			"message": "转账时请使用相同的货币类型",
-			"error":   fmt.Sprintf("用户ID'%d' 的货币类型不匹配: '%s' vs '%s'", accountID, currency, toAccount.Currency),
+			"error":   fmt.Sprintf("用户ID'%d' 的货币类型不匹配: '%s' vs '%s'", accountID, currency, account.Currency),
 		})
-		return false
+		return account, false
 	}
-	return true
+	return account, true
 }

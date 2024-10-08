@@ -8,7 +8,10 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"simple_bank/constants"
+	"simple_bank/pkg/token"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -21,8 +24,9 @@ import (
 )
 
 func TestAccountAPI(t *testing.T) {
+	username := pkg.RandomString(5)
 	// mock random account
-	account := randomAccount(t)
+	account := randomAccount(t, username)
 	fmt.Printf("account %v", account)
 
 	// 测试用例集合, 存储数据可能的情况
@@ -33,12 +37,16 @@ func TestAccountAPI(t *testing.T) {
 	testCases := []struct {
 		name          string
 		accountID     int64
+		setupAuth     func(t *testing.T, req *http.Request, tokenMaker token.Maker)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:      "OK",
 			accountID: account.ID,
+			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				addMiddleware(t, req, constants.AuthorizationHeaderType, tokenMaker, username, time.Minute)
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
@@ -49,10 +57,42 @@ func TestAccountAPI(t *testing.T) {
 				require.Equal(t, http.StatusOK, recorder.Code)
 				requireBodyMatchAccount(t, recorder.Body, account)
 			},
+		}, {
+			name:      "令牌的username与用户的username不匹配",
+			accountID: account.ID,
+			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				addMiddleware(t, req, constants.AuthorizationHeaderType, tokenMaker, "Unauthorized username", time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
+					Times(1).
+					Return(account, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		}, {
+			name:      "未授权",
+			accountID: account.ID,
+			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetAccount(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
 		},
 		{
 			name:      "NotFoundID",
-			accountID: account.ID,
+			accountID: int64(-1),
+			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
+				addMiddleware(t, req, constants.AuthorizationHeaderType, tokenMaker, username, time.Minute)
+			},
+
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
@@ -61,20 +101,6 @@ func TestAccountAPI(t *testing.T) {
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
-			},
-		},
-		{
-			name: "BadRequest",
-			// accountID: account.ID,
-			accountID: -1,
-			buildStubs: func(store *mockdb.MockStore) {
-				// 因为ID无效, gin校验时直接返回错误, 并没有调用GetAccount, 也就没有返回值
-				store.EXPECT().
-					GetAccount(gomock.Any(), gomock.Any()).
-					Times(0)
-			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 	}
@@ -97,16 +123,17 @@ func TestAccountAPI(t *testing.T) {
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
+			tc.setupAuth(t, request, server.tokenMake)
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)
 		})
 	}
 }
 
-func randomAccount(t *testing.T) db.Accounts {
+func randomAccount(t *testing.T, username string) db.Accounts {
 	account := db.Accounts{
 		ID:       pkg.RandomInt(1, 10),
-		Owner:    pkg.RandomString(5),
+		Owner:    username,
 		Balance:  pkg.RandomInt(1, 100),
 		Currency: pkg.RandomCurrency(),
 	}

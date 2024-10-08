@@ -1,27 +1,27 @@
-version: '3'
-
 services:
-  backend:
+
+  bank:
     build:
       context: .
-      dockerfile: .
-    image: lisa/backend:dev
+      dockerfile: Dockerfile
+    image: ccr.ccs.tencentyun.com/lisa/backend
     # 把<appname> 替换为go mod xxx生成的名称, 也就是go build 之后的应用名称, 例如backend
-    container_name: backend
+    container_name: simplebank
     # 重启策略, 遇到错误就停止
     restart: unless-stopped
-    # 环境变量
-    #environment:
-    #  -
-
-    # 重启策略, 永远重启
-    #restart: always
+    environment:
+      - DB_SOURCE="postgresql://postgres:postgres@postgres17:5432/simple_bank?sslmode=disable"
 
     # 端口, 对应你的服务的端口
     ports:
-      - "30001:30001"
-      - "30002:30002"
-    volumes:
-      - ./configs/:/data/conf/
-    # 定义容器启动时运行的命令, 把 backend 替换为go.mod文件里面module的名称, 例如 backend
-    command: [ "/app/backend", "-conf", "/data/conf" ]
+      - "8080:8080"
+
+  postgres17:
+    image: postgres:17.0-alpine3.20
+    ports:
+      - "5432:5432"
+    container_name: postgres17
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=simple_bank
