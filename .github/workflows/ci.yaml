@@ -17,7 +17,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ./backend
+        working-directory: backend
     steps:
       - name: Login Cloud Registry
         run: docker login ${{secrets.REGISTRY}} --username=${{secrets.REGISTRY_USERNAME}} --password=${{secrets.REGISTRY_PASSWORD}}
