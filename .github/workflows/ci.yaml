@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Login Cloud Registry
-        run: docker login ${{secrets.REGISTRY}} --username=${{secrets.REGISTRY_USERNAME}} --password=${{secrets.REGISTRY_PASSWORD}}
+        run: echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{secrets.REGISTRY}} --username=${{secrets.REGISTRY_USERNAME}} --password-stdin
 
       - name: Build, tag, and push image to Cloud Registry
         env:
@@ -25,7 +25,14 @@ jobs:
         run: |
           pwd
           ls
-          cd backend || true
+          if [[ -d "backend" ]]; then
+            echo "Switching to backend directory."
+            cd backend
+          else
+            echo "Backend directory not found, continuing with current directory."
+          fi
+          pwd
+          
           docker build \
             --progress=plain \
             -t ${{secrets.REGISTER_REPOSITORY}}:$version . \
