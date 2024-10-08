@@ -31,27 +31,32 @@ jobs:
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login Cloud Registry
+      -
+        # 登录到容器注册表
+        name: Login Cloud Registry
         run: echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{secrets.REGISTRY}} --username=${{secrets.REGISTRY_USERNAME}} --password-stdin
 
-      - name: Build, tag, and push image to Cloud Registry
+      -
+        # 构建, 标记, 推送镜像到容器注册表
+        name: Build, tag, and push image to Cloud Registry
         env:
-          version: v2.0.0
-          port: 8080
+          VERSION: v2.0.0
+          PORT: 8080
+          CGO_ENABLED: 0
+          GO_IMAGE: golang:1.23.1-alpine3.20
         run: |
-          pwd
           cd backend
           docker buildx build \
             -t ${{secrets.REGISTER_REPOSITORY}}:latest \
-            -t ${{secrets.REGISTER_REPOSITORY}}:$version \
+            -t ${{secrets.REGISTER_REPOSITORY}}:$VERSION \
             -t ${{secrets.REGISTER_REPOSITORY}}:$GITHUB_SHA \
             --platform linux/amd64,linux/arm64 \
-            --build-arg CGO_ENABLED=0 \
-            --build-arg GO_IMAGE=golang:1.23.1-alpine3.20 \
-            --build-arg version=$version \
-            --build-arg PORT=$port .
+            --build-arg CGO_ENABLED=$CGO_ENABLED \
+            --build-arg GO_IMAGE=$GO_IMAGE \
+            --build-arg version=$VERSION \
+            --build-arg PORT=$PORT .
          docker push ${{secrets.REGISTRY}}/${{secrets.REGISTER_REPOSITORY}}:latest
-         docker push ${{secrets.REGISTRY}}/${{secrets.REGISTER_REPOSITORY}}:$version
+         docker push ${{secrets.REGISTRY}}/${{secrets.REGISTER_REPOSITORY}}:$VERSION
          docker push ${{secrets.REGISTRY}}/${{secrets.REGISTER_REPOSITORY}}:$GITHUB_SHA
 
   test:
@@ -98,11 +103,13 @@ jobs:
       - name: Run database migrate
         run: |
           pwd
+          cd backend
           make migrate-up
 
       - name: Test
         run: |
-          cd backend
+          pwd
+          ls
           make test
 
   deploy:
