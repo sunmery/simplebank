@@ -34,7 +34,7 @@ jobs:
       -
         # 登录到容器注册表
         name: Login Cloud Registry
-        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login --username ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+        run: echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login --username ${{ secrets.REGISTRY_USERNAME }} --password-stdin
 
       -
         # 构建, 标记, 推送镜像到容器注册表
@@ -47,17 +47,17 @@ jobs:
         run: |
           cd backend
           docker buildx build \
-            -t ${{secrets.REGISTER_REPOSITORY}}:latest \
-            -t ${{secrets.REGISTER_REPOSITORY}}:$VERSION \
-            -t ${{secrets.REGISTER_REPOSITORY}}:$GITHUB_SHA \
+            -t ${{ secrets.REGISTER_REPOSITORY }}:latest \
+            -t ${{ secrets.REGISTER_REPOSITORY }}:$VERSION \
+            -t ${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA \
             --platform linux/amd64,linux/arm64 \
             --build-arg CGO_ENABLED=$CGO_ENABLED \
             --build-arg GO_IMAGE=$GO_IMAGE \
             --build-arg version=$VERSION \
             --build-arg PORT=$PORT .
-         docker push ${{secrets.REGISTRY}}/${{secrets.REGISTER_REPOSITORY}}:latest
-         docker push ${{secrets.REGISTRY}}/${{secrets.REGISTER_REPOSITORY}}:$VERSION
-         docker push ${{secrets.REGISTRY}}/${{secrets.REGISTER_REPOSITORY}}:$GITHUB_SHA
+          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:latest
+          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$VERSION
+          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA
 
   test:
     # Service containers to run with `container-job`
