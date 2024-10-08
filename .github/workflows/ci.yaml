@@ -20,7 +20,7 @@ jobs:
         run: docker login ${{secrets.REGISTRY}} --username=${{secrets.REGISTRY_USERNAME}} --password=${{secrets.REGISTRY_PASSWORD}}
 
       - name: Build, tag, and push image to Cloud Registry
-        var:
+        env:
           version: v2.0.0
           port: 8080
         run: |
