@@ -25,15 +25,15 @@ jobs:
         run: |
           docker build \
             --progress=plain \
-            -t ${{secrets.REGISTRY_REPOSITOTY}}:$version . \
+            -t ${{secrets.REGISTER_REPOSITORY}}:$version . \
             --build-arg GOOS=darwin \
             --build-arg ARCH=arm64 \
             --build-arg CGO_ENABLED=0 \
             --build-arg GO_IMAGE=golang:1.23.1-alpine3.20 \
             --build-arg version=$version \
             --build-arg PORT=$port
-          docker tag ${{secrets.REGISTRY_REPOSITOTY}}:$version ${{secrets.REGISTRY}}/${{secrets.REGISTRY_REPOSITOTY}}:$version
-          docker push ${{secrets.REGISTRY}}/${{secrets.REGISTRY_REPOSITOTY}}:$version
+          docker tag ${{secrets.REGISTER_REPOSITORY}}:$version ${{secrets.REGISTRY}}/${{secrets.REGISTER_REPOSITORY}}:$version
+          docker push ${{secrets.REGISTRY}}/${{secrets.REGISTER_REPOSITORY}}:$version
 
 
   test:
@@ -77,10 +77,6 @@ jobs:
 
       - name: Run database migrate
         run: |
-          pwd
-          cd ../
-          pwd
-          cd backend
           pwd
           make migrate-up
 
