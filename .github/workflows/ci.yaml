@@ -25,6 +25,8 @@ jobs:
         run: |
           pwd
           ls
+          cd ..
+          ls
           cd backend
           docker build \
             --progress=plain \
