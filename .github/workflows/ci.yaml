@@ -27,6 +27,8 @@ jobs:
           ls
           cd ..
           ls
+          cd ..
+          ls
           cd backend
           docker build \
             --progress=plain \
