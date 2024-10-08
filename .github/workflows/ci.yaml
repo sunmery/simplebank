@@ -15,8 +15,21 @@ jobs:
     name: Build image
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      -
+        # 检出仓库中的代码，确保脚本可以访问仓库中的所有文件
+        name: Checkout repository
         uses: actions/checkout@v4
+
+      -
+        # 设置 QEMU 仿真器。允许你在 x86 架构的主机上构建和测试其他架构的 Docker 镜像
+        # https://github.com/docker/setup-qemu-action
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      -
+        # Buildx 是 Docker 的一个插件，支持多平台构建
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Login Cloud Registry
         run: echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{secrets.REGISTRY}} --username=${{secrets.REGISTRY_USERNAME}} --password-stdin
@@ -27,26 +40,19 @@ jobs:
           port: 8080
         run: |
           pwd
-          ls
-          if [[ -d "backend" ]]; then
-            echo "Switching to backend directory."
-            cd backend
-          else
-            echo "Backend directory not found, continuing with current directory."
-          fi
-          pwd
-          
-          docker build \
-            --progress=plain \
-            -t ${{secrets.REGISTER_REPOSITORY}}:$version . \
-            --build-arg GOOS=linux \
-            --build-arg ARCH=amd64 \
+          cd backend
+          docker buildx build \
+            -t ${{secrets.REGISTER_REPOSITORY}}:latest \
+            -t ${{secrets.REGISTER_REPOSITORY}}:$version \
+            -t ${{secrets.REGISTER_REPOSITORY}}:$GITHUB_SHA \
+            --platform linux/amd64,linux/arm64 \
             --build-arg CGO_ENABLED=0 \
             --build-arg GO_IMAGE=golang:1.23.1-alpine3.20 \
             --build-arg version=$version \
-            --build-arg PORT=$port
-          docker tag ${{secrets.REGISTER_REPOSITORY}}:$version ${{secrets.REGISTRY}}/${{secrets.REGISTER_REPOSITORY}}:$version
-          docker push ${{secrets.REGISTRY}}/${{secrets.REGISTER_REPOSITORY}}:$version
+            --build-arg PORT=$port .
+         docker push ${{secrets.REGISTRY}}/${{secrets.REGISTER_REPOSITORY}}:latest
+         docker push ${{secrets.REGISTRY}}/${{secrets.REGISTER_REPOSITORY}}:$version
+         docker push ${{secrets.REGISTRY}}/${{secrets.REGISTER_REPOSITORY}}:$GITHUB_SHA
 
   test:
     # Service containers to run with `container-job`
@@ -74,6 +80,10 @@ jobs:
           - '5432:5432'
     runs-on: ubuntu-latest
     steps:
+      - # 检出仓库中的代码，确保脚本可以访问仓库中的所有文件
+        name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
