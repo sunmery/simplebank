@@ -14,6 +14,10 @@ jobs:
   build:
     name: Build image
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./backend
     steps:
       - name: Login Cloud Registry
         run: docker login ${{secrets.REGISTRY}} --username=${{secrets.REGISTRY_USERNAME}} --password=${{secrets.REGISTRY_PASSWORD}}
@@ -23,15 +27,13 @@ jobs:
           version: v2.0.0
           port: 8080
         run: |
-          cd simplebank
-          ls
-          cd backend
+          pwd
           ls
           docker build \
             --progress=plain \
             -t ${{secrets.REGISTER_REPOSITORY}}:$version . \
-            --build-arg GOOS=darwin \
-            --build-arg ARCH=arm64 \
+            --build-arg GOOS=linux \
+            --build-arg ARCH=amd64 \
             --build-arg CGO_ENABLED=0 \
             --build-arg GO_IMAGE=golang:1.23.1-alpine3.20 \
             --build-arg version=$version \
