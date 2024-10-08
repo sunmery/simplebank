@@ -23,10 +23,12 @@ jobs:
           version: v2.0.0
           port: 8080
         run: |
+          pwd
+          ls
+          cd backend
           docker build \
             --progress=plain \
-            -f backend/Dockerfile \
-            -t ${{secrets.REGISTER_REPOSITORY}}:$version backend \
+            -t ${{secrets.REGISTER_REPOSITORY}}:$version . \
             --build-arg GOOS=darwin \
             --build-arg ARCH=arm64 \
             --build-arg CGO_ENABLED=0 \
@@ -35,7 +37,6 @@ jobs:
             --build-arg PORT=$port
           docker tag ${{secrets.REGISTER_REPOSITORY}}:$version ${{secrets.REGISTRY}}/${{secrets.REGISTER_REPOSITORY}}:$version
           docker push ${{secrets.REGISTRY}}/${{secrets.REGISTER_REPOSITORY}}:$version
-
 
   test:
     # Service containers to run with `container-job`
