@@ -13,10 +13,9 @@ jobs:
 
   build:
     name: Build image
+    run-name: Build image
     runs-on: ubuntu-latest
-
     steps:
-
       - name: Login Cloud Registry
         run: docker login ${{secrets.REGISTRY}} --username=${{secrets.REGISTRY_USERNAME}} --password=${{secrets.REGISTRY_PASSWORD}}
 
@@ -90,5 +89,3 @@ jobs:
         run: |
           cd backend
           make test
-
-      - name: Build in Kubernetes
