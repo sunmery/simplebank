@@ -25,7 +25,8 @@ jobs:
         run: |
           docker build \
             --progress=plain \
-            -t ${{secrets.REGISTER_REPOSITORY}}:$version . \
+            -f backend/Dockerfile \
+            -t ${{secrets.REGISTER_REPOSITORY}}:$version backend \
             --build-arg GOOS=darwin \
             --build-arg ARCH=arm64 \
             --build-arg CGO_ENABLED=0 \
