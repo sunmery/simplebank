@@ -2,6 +2,7 @@ import {defineConfig} from 'vite'
 import react from '@vitejs/plugin-react'
 // import basicSsl from '@vitejs/plugin-basic-ssl'
 import {TanStackRouterVite} from '@tanstack/router-plugin/vite'
+import {resolve} from 'path'
 
 /**
  * @description
@@ -33,6 +34,11 @@ export default defineConfig(async ({command}) => {
 				port: 3000,
 				strictPort: true,
 			},
+			resolve: {
+				alias: {
+					'@': resolve(__dirname, 'src'),
+				},
+			},
 		}
 	} else {
 		return {
@@ -52,6 +58,11 @@ export default defineConfig(async ({command}) => {
 			// 绝对 URL 路径名，例如 /foo/
 			// 完整的 URL，例如 https://foo.com/（原始的部分在开发环境中不会被使用）
 			// 空字符串或 ./（用于嵌入形式的开发）
+			resolve: {
+				alias: {
+					'@/': resolve(__dirname, 'src/'),
+				},
+			},
 			base: './',
 			mode: 'production',
 			server: {
