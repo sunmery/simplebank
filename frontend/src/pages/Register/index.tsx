@@ -1,19 +1,22 @@
 import type {ChangeEvent} from 'react'
 import {useState} from 'react'
+import {skipToken, useQuery} from '@tanstack/react-query'
 
-const createUser = async (
-	username: string,
-	fullName: string,
-	email: string,
-	password: string,
-) => {
+interface RegisterUser {
+	username: string
+	fullName: string
+	email: string
+	password: string
+}
+
+const createUser = async (user: RegisterUser) => {
 	try {
 		const res = await fetch('http://localhost:8080/users', {
 			method: 'PUT',
 			headers: {'Content-Type': 'application/json'},
-			body: JSON.stringify({username, fullName, email, password}),
+			body: JSON.stringify({...user}),
 		})
-		const data: LoginResponse = await res.json()
+		const data: RegisterUser = await res.json()
 		return data
 	} catch (error) {
 		if (error instanceof Error) {
@@ -39,6 +42,20 @@ export default function Register() {
 		email: '',
 		password: '',
 	})
+	const [query, setQuery] = useState<boolean>(false)
+
+	const {isError, data, error} = useQuery({
+		queryKey: ['register', user],
+		queryFn: query ? () => createUser(user) : skipToken,
+	})
+
+	if (isError) {
+		return <span>Error: {error.message}</span>
+	}
+
+	const handleRegister = () => {
+		setQuery(true)
+	}
 
 	const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
 		const {name, value} = e.target
@@ -92,7 +109,12 @@ export default function Register() {
 					id=""
 				/>
 			</label>
-			<button type="submit">Register</button>
+			<button
+				type="button"
+				onClick={handleRegister}
+			>
+				Register
+			</button>
 		</>
 	)
 }
