@@ -12,4 +12,4 @@ images:
 
 patches:
   - path: replica_count.yaml
-  - path: env.yaml
+#  - path: env.yaml

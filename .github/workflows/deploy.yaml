@@ -150,33 +150,26 @@ jobs:
         run: |
           curl -o kustomize --location https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
           chmod u+x ./kustomize
+          ./kustomize version
 
       - name: Install kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl{,.sha256}"
           echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
-          ls
           chmod +x ./kubectl
-          ./kubectl version --client
-#          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
       - name: Connect Kubernetes Cluster
         run: |
           mkdir -pv ~/.kube/
           echo "${{secrets.KUBE_CONF}}" > ~/.kube/config
-          ./kubectl cluster-info
-#          echo "alias kubectl='kubectl --kubeconfig=$(pwd)/config'" >> ~/.bashrc
-#          source ~/.bashrc
+          ./kubectl get ns
 
       # Deploy the Docker image to the TKE cluster
       - name: Deploy
         run: |
-          echo "GITHUB_SHA: ${GITHUB_SHA}"
-          pwd
-          ls
+          ./kubectl create secret generic db-source-secret --from-literal='DB_SOURCE=${{ secrets.DB_SOURCE }}' --namespace=$NAMESPACE
           ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA
-          ./kustomize build . | kubectl apply -f - -n $NAMESPACE
-          ./kubectl rollout status deploy -n $NAMESPACE
-          ./kubectl get po -n -owide $NAMESPACE
-          ./kubectl get svc -n $NAMESPACE
-
+          ./kustomize build . | kubectl apply -f -
+          ./kubectl rollout status deploy
+          ./kubectl get po -owide
+          ./kubectl get svc
