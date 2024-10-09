@@ -59,6 +59,7 @@ export default defineConfig(async ({command}) => {
 				port: 443,
 				strictPort: true,
 			},
+
 			assetsDir: 'public',
 			chunkSizeWarningLimit: 1000,
 			// 配置打包文件路径和命名

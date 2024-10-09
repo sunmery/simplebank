@@ -67,6 +67,7 @@ jobs:
             --build-arg GOOS=$GOOS \
             --build-arg GOARCH=$GOARCH \
             --platform $GOOS/$GOARCH \
+            --load
           
           docker tag actions/backend $register/$REPOSITORY:latest
           docker tag actions/backend $register/$REPOSITORY:$VERSION
