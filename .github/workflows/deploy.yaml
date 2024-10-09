@@ -59,13 +59,18 @@ jobs:
         run: |
           docker buildx build . \
             --progress=plain \
+            -t actions/backend \
             --build-arg GOIMAGE=$GOIMAGE \
             --build-arg CGOENABLED=$CGOENABLED \
             --build-arg VERSION=$VERSION \
             --build-arg PORT=$PORT \
             --build-arg GOOS=$GOOS \
             --build-arg GOARCH=$GOARCH \
-            --platform $GOOS/$GOARCH
+            --platform $GOOS/$GOARCH \
+          
+          docker tag actions/backend $register/$REPOSITORY:latest
+          docker tag actions/backend $register/$REPOSITORY:$VERSION
+          docker tag actions/backend $register/$REPOSITORY:$GITHUB_SHA
           
           docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:latest
           docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$VERSION

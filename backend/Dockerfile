@@ -44,6 +44,8 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
    # 多个服务的形式: go build -o /bin/ ./...
 
 FROM alpine:latest AS final
+# 从构建阶段复制编译好的 Go 应用程序到运行阶段
+COPY --from=build /bin/main /bin/
 
 # 用户进程ID
 ARG UID=10001
@@ -66,9 +68,6 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN echo 'Asia/Shanghai' >/etc/timezone
 
 USER appuser
-
-# 从构建阶段复制编译好的 Go 应用程序到运行阶段
-COPY --from=build /bin/main /bin/
 
 # 复制配置文件
 COPY app.env .
