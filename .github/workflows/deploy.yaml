@@ -145,10 +145,12 @@ jobs:
 
       - name: Connect Kubernetes Cluster
         run: |
-          echo "${{secrets.KUBE_CONF}}" > config
-          ./kubectl --kubeconfig config
+          mkdir -pv ~/.kube/
+          echo "${{secrets.KUBE_CONF}}" > ~/.kube/config
           ./kubectl cluster-info
-          
+#          echo "alias kubectl='kubectl --kubeconfig=$(pwd)/config'" >> ~/.bashrc
+#          source ~/.bashrc
+
       # Deploy the Docker image to the TKE cluster
       - name: Deploy
         run: |
