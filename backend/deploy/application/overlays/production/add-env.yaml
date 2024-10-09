@@ -2,8 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: simple-bank-api
-  labels:
-    app: simple-bank-api
 spec:
   template:
     spec:
@@ -13,4 +11,6 @@ spec:
             - name: GIN_MODE
               value: release
             - name: DB_SOURCE
-              value: "postgresql://postgres:postgres@159.75.231.54/simple_bank?sslmode=disable"
+              valueFrom:
+                secretKeyRef:
+                  key: DB_SOURCE

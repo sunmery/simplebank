@@ -4,3 +4,13 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
+  - secret.yaml
+
+# 命名空间
+namespace: bank
+
+# 标签
+#commonLabels:
+#  app: bingo
+#commonAnnotations:
+#  oncallPager: 800-555-1212
