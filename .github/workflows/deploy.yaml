@@ -155,7 +155,7 @@ jobs:
       - name: Deploy
         run: |
           echo "GITHUB_SHA: ${GITHUB_SHA}"
-          cd overlays/production/
+          cd ./backend/deploy/application/overlays/production
           ./kustomize edit set image example=ccr.ccs.tencentyun.com/lisa/backend:v2.0.2
           ./kustomize build . | kubectl apply -f - -n $NAMESPACE
           ./kubectl rollout status deployment/${DEPLOYMENT_NAME} -n $NAMESPACE

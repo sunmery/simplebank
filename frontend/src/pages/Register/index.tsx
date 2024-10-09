@@ -28,6 +28,7 @@ interface User {
 	email: string
 	password: string
 }
+
 /**
  * @returns JSXElement
  */
@@ -39,63 +40,56 @@ export default function Register() {
 		password: '',
 	})
 
+	const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+		const {name, value} = e.target
+		setUser((prevState) => ({
+			...prevState,
+			[name]: value,
+		}))
+	}
+
 	return (
 		<>
 			<label htmlFor="">
 				<input
 					type="text"
-					name=""
+					name="username"
 					id=""
-					onChange={(e: ChangeEvent<HTMLInputElement>) =>
-						setUser({
-							username: e.currentTarget.value,
-						})
-					}
+					value={user.username}
+					onChange={handleInputChange}
 				/>
 			</label>
 			<label htmlFor="">
 				<input
 					type="text"
-					name=""
+					name="fullName"
 					id=""
-					onChange={(e: ChangeEvent<HTMLInputElement>) =>
-						setUser({
-							email: '',
-							fullName: '',
-							password: '',
-							username: e.currentTarget.value,
-						})
-					}
+					onChange={handleInputChange}
 				/>
 			</label>
 			<label htmlFor="">
 				<input
 					type="email"
-					name=""
+					name="email"
 					id=""
-					onChange={(e: ChangeEvent<HTMLInputElement>) =>
-						setEmail(e.currentTarget.value)
-					}
+					onChange={handleInputChange}
 				/>
 			</label>
-			<label htmlFor="">
-				<input
-					type="text"
-					name=""
-					id=""
-					onChange={(e: ChangeEvent<HTMLInputElement>) =>
-						setUsername(e.currentTarget.value)
-					}
-				/>
-			</label>
+
 			<label htmlFor="">
 				<input
 					type="password"
-					name=""
+					name="password"
 					id=""
-					onChange={(e: ChangeEvent<HTMLInputElement>) =>
-						setPassword(e.currentTarget.value)
-					}
+					onChange={handleInputChange}
+				/>
+			</label>
+			<label htmlFor="">
+				重复密码:
+				<input
+					type="password"
+					name="repPassword"
+					id=""
 				/>
 			</label>
 			<button type="submit">Register</button>

@@ -8,7 +8,7 @@ set -o posix errexit -o pipefail
 
 # 部署到生产环境:
 # 1. 从项目根目录进入到生产环境所需的部署文件中
-cd ./backend/deploy/application/overlays/production;
+cd ./backend/deploy/application/overlays/production
 # 2. 替换镜像为生产环境的镜像
 kustomize edit set image example=registry/user/repo:tag
 # 3. 部署
