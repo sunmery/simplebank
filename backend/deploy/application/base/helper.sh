@@ -10,6 +10,6 @@ set -o posix errexit -o pipefail
 # 1. 从项目根目录进入到生产环境所需的部署文件中
 cd ./backend/deploy/application/overlays/production;
 # 2. 替换镜像为生产环境的镜像
-kustomize edit set image example=ccr.ccs.tencentyun.com/lisa/backend:v2.0.0
+kustomize edit set image example=registry/user/repo:tag
 # 3. 部署
 kustomize build . | kubectl apply -f -
