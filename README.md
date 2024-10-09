@@ -1,3 +1,5 @@
+## 状态
+![workflow运行状态](https://github.com/sunmery/simplebank/actions/workflows/deploy.yaml/badge.svg)
 ## 介绍
 
 基于前端React技术栈与Golang后端Kratos技术栈组合的规范化最佳实践(个人认为)的前后端项目

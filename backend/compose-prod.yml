@@ -1,0 +1,62 @@
+services:
+
+  bank:
+    build:
+      context: .
+      dockerfile: Dockerfile
+#    image: ccr.ccs.tencentyun.com/lisa/backend:v2.0.0
+    image: lisa/backend:v2.0.0
+    # 把<appname> 替换为go mod xxx生成的名称, 也就是go build 之后的应用名称, 例如backend
+    container_name: simple-bank
+    # 重启策略, 遇到错误就停止
+    restart: unless-stopped
+    environment:
+      - GIN_MODE=release
+      - DB_SOURCE="postgresql://postgres:postgres@159.75.231.54:5432/simple_bank?sslmode=disable"
+    # 端口, 对应你的服务的端口
+    ports:
+      - "0.0.0.0:8080:8080"
+    volumes:
+      - ./app.env:/bin/app.env
+    command:
+      - "/bin/main"
+
+# 构建Docker所属的当前平台与架构的二进制文件, 进到当前的backend目录
+# export version=v2.0.0
+# export repository="lisa/backend"
+# docker build \
+#   --progress=plain \
+#   -t $repository:$version . \
+#   --build-arg CGO_ENABLED=0 \
+#   --build-arg GO_IMAGE=golang:1.23.1-alpine3.20 \
+#   --build-arg version=$version \
+#   --build-arg PORT=8080
+
+# 构建多架构的二进制文件, 需要在Docker Desktop 启用 containerd 映像存储
+# https://docs.docker.com/desktop/containerd/#enable-the-containerd-image-store
+# export version=v2.0.0
+# export repository="lisa/backend"
+# docker buildx build \
+#   --progress=plain \
+#   -t $repository:$version . \
+#   --build-arg CGO_ENABLED=0 \
+#   --build-arg GO_IMAGE=golang:1.23.1-alpine3.20 \
+#   --build-arg version=$version \
+#   --build-arg PORT=8080 \
+#   --platform linux/amd64,linux/arm64
+
+# 推送
+# export version=v2.0.0
+# export repository="lisa/backend"
+# export register="ccr.ccs.tencentyun.com"
+# docker tag $repository:$version $register/$repository:$version
+# docker push $register/$repository:$version
+
+# 拉取
+# docker pull $register/$repository:$version
+
+# 运行
+# docker run \
+# --rm \
+# -p 8080:8080 \
+# $register/container:$version
