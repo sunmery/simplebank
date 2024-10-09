@@ -1,6 +1,7 @@
 import type {ChangeEvent} from 'react'
 import {useState} from 'react'
 import {skipToken, useQuery} from '@tanstack/react-query'
+import {Alert} from '@mui/joy'
 
 interface RegisterUser {
 	username: string
@@ -63,6 +64,17 @@ export default function Register() {
 			...prevState,
 			[name]: value,
 		}))
+	}
+
+	if (data) {
+		return (
+			<Alert
+				variant="solid"
+				color="success"
+			>
+				注册成功! 欢迎您 {data.fullName}
+			</Alert>
+		)
 	}
 
 	return (

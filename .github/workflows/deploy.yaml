@@ -15,6 +15,12 @@ jobs:
   build:
     name: Build image
     runs-on: ubuntu-latest
+    env:
+      GOOS: linux
+      GOARCH: amd64
+      VERSION: v2.0.0
+      GOIMAGE: golang:1.23.1-alpine3.20
+      CGOENABLED: 0
     defaults:
       run:
         shell: bash
@@ -51,15 +57,15 @@ jobs:
           GO_IMAGE: golang:1.23.1-alpine3.20
 
         run: |
-          docker buildx build \
-            -t ${{ secrets.REGISTER_REPOSITORY }}:latest \
-            -t ${{ secrets.REGISTER_REPOSITORY }}:$VERSION \
-            -t ${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA \
-            --platform linux/amd64,linux/arm64 \
-            --build-arg CGO_ENABLED=$CGO_ENABLED \
-            --build-arg GO_IMAGE=$GO_IMAGE \
-            --build-arg version=$VERSION \
-            --build-arg PORT=$PORT .
+          docker buildx build . \
+            --progress=plain \
+            --build-arg GOIMAGE=$GOIMAGE \
+            --build-arg CGOENABLED=$CGOENABLED \
+            --build-arg VERSION=$VERSION \
+            --build-arg PORT=$PORT \
+            --build-arg GOOS=$GOOS \
+            --build-arg GOARCH=$GOARCH \
+            --platform $GOOS/$GOARCH
           
           docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:latest
           docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$VERSION
@@ -162,9 +168,9 @@ jobs:
           echo "GITHUB_SHA: ${GITHUB_SHA}"
           pwd
           ls
-          ./kustomize edit set image example=ccr.ccs.tencentyun.com/lisa/backend:v2.0.2
+          ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA
           ./kustomize build . | kubectl apply -f - -n $NAMESPACE
-          ./kubectl rollout status deployment/${DEPLOYMENT_NAME} -n $NAMESPACE
+          ./kubectl rollout status deploy -n $NAMESPACE
           ./kubectl get po -n -owide $NAMESPACE
           ./kubectl get svc -n $NAMESPACE
 

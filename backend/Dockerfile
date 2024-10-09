@@ -2,9 +2,9 @@
 # https://docs.docker.com/go/dockerfile-reference/
 
 # 定义基础镜像的 Golang 版本
-ARG GO_IMAGE=golang:1.23.1-alpine3.20
+ARG GOIMAGE=golang:1.23.1-alpine3.20
 
-FROM --platform=$BUILDPLATFORM ${GO_IMAGE} AS build
+FROM --platform=$BUILDPLATFORM ${GOIMAGE} AS build
 WORKDIR /src
 
 # 版本号
@@ -38,7 +38,7 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \
     GOOS=$GOOS \
     GOARCH=$GOARCH \
-    CGO_ENABLED=$CGOENABLED \
+    CGOENABLED=$CGOENABLED \
     go build -o /bin/main .
    # 带版本的形式: go build -ldflags="-X main.Version=${VERSION}" -o /bin/main .
    # 多个服务的形式: go build -o /bin/ ./...
@@ -80,42 +80,48 @@ EXPOSE $PORT
 CMD ["/bin/main"]
 
 # 构建Docker所属的当前平台与架构的二进制文件, 进到当前的backend目录
-# export version=v2.0.0
-# export repository="lisa/backend"
-# docker build \
+# export VERSION=v2.0.0
+# export REPOSITORY="lisa/backend"
+# export GOOS=linux
+# export GOARCH=amd64
+# export PORT=8080
+# docker build . \
 #   --progress=plain \
-#   -t $repository:$version . \
-#   --build-arg CGO_ENABLED=0 \
-#   --build-arg GO_IMAGE=golang:1.23.1-alpine3.20 \
-#   --build-arg version=$version \
-#   --build-arg PORT=8080
+#   -t $REPOSITORY:$VERSION \
+#   --build-arg CGOENABLED=0 \
+#   --build-arg GOIMAGE=golang:1.23.1-alpine3.20 \
+#   --build-arg GOOS=$GOOS \
+#   --build-arg GOARCH=$GOARCH \
+#   --build-arg VERSION=$VERSION \
+#   --build-arg PORT=$PORT
 
 # 构建多架构的二进制文件, 需要在Docker Desktop 启用 containerd 映像存储
 # https://docs.docker.com/desktop/containerd/#enable-the-containerd-image-store
-# export version=v2.0.0
-# export repository="lisa/backend"
+# export VERSION=v2.0.0
+# export REPOSITORY="lisa/backend"
 # export GOOS=linux
 # export GOARCH=amd64
-# docker buildx build \
+# export PORT=8080
+# docker buildx build . \
 #   --progress=plain \
-#   -t $repository:$version . \
-#   --build-arg CGO_ENABLED=0 \
-#   --build-arg GO_IMAGE=golang:1.23.1-alpine3.20 \
-#   --build-arg version=$version \
-#   --build-arg PORT=8080 \
+#   -t $REPOSITORY:$VERSION \
+#   --build-arg CGOENABLED=0 \
+#   --build-arg GOIMAGE=golang:1.23.1-alpine3.20 \
+#   --build-arg VERSION=$VERSION \
+#   --build-arg PORT=$PORT \
 #   --build-arg GOOS=$GOOS \
 #   --build-arg GOARCH=$GOARCH \
 #   --platform $GOOS/$GOARCH
 
 # 推送
 # export register="ccr.ccs.tencentyun.com"
-# docker tag $repository:$version $register/$repository:$version
-# docker push $register/$repository:$version
+# docker tag $REPOSITORY:$VERSION $register/$REPOSITORY:$VERSION
+# docker push $register/$REPOSITORY:$VERSION
 
 # 拉取
 # export GOOS=linux
 # export GOARCH=amd64
-# docker pull $register/$repository:$version --platform $GOOS/GOARCH
+# docker pull $register/$REPOSITORY:$VERSION --platform $GOOS/GOARCH
 
 # 运行
 # docker run \
@@ -123,4 +129,4 @@ CMD ["/bin/main"]
 # -p 8080:8080 \
 # -e GIN_MODE=release \
 # -e DB_SOURCE="postgresql://postgres:postgres@159.75.231.54:5432/simple_bank?sslmode=disable" \
-# $register/container:$version
+# $register/container:$VERSION
