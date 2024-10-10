@@ -37,8 +37,3 @@ patches:
 #    type: generated
 #  annotations:
 #    note: generated
-
-images:
-- name: example
-  newName: ccr.ccs.tencentyun.com/lisa/backend
-  newTag: v2.0.0

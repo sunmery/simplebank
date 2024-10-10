@@ -12,12 +12,13 @@ interface RegisterUser {
 
 const createUser = async (user: RegisterUser) => {
 	try {
-		const res = await fetch('http://localhost:8080/users', {
+		const res = await fetch(`${import.meta.env.VITE_URL}/users`, {
 			method: 'PUT',
 			headers: {'Content-Type': 'application/json'},
 			body: JSON.stringify({...user}),
 		})
 		const data: RegisterUser = await res.json()
+		console.log(data)
 		return data
 	} catch (error) {
 		if (error instanceof Error) {
@@ -80,6 +81,7 @@ export default function Register() {
 	return (
 		<>
 			<label htmlFor="">
+				username:
 				<input
 					type="text"
 					name="username"
@@ -89,6 +91,7 @@ export default function Register() {
 				/>
 			</label>
 			<label htmlFor="">
+				Fullname:
 				<input
 					type="text"
 					name="fullName"
@@ -97,6 +100,7 @@ export default function Register() {
 				/>
 			</label>
 			<label htmlFor="">
+				Email:
 				<input
 					type="email"
 					name="email"
@@ -104,8 +108,8 @@ export default function Register() {
 					onChange={handleInputChange}
 				/>
 			</label>
-
 			<label htmlFor="">
+				Password:
 				<input
 					type="password"
 					name="password"

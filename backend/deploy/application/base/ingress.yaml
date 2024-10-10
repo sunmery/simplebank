@@ -1,11 +1,11 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: simple-bank-api-service
+  name: simple-bank-api-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
-#  ingressClassName: nginx
+  ingressClassName: higress
   rules:
     - host: "api.lookeke.com"
     - http:
@@ -14,7 +14,10 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: simple-bank-api-service
+                name: api-simple-bank-service
                 port:
                   number: 80
-
+  tls:
+    - hosts:
+        - api.lookeke.com
+      secretName: simple-bank-api-sect

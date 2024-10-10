@@ -19,6 +19,7 @@
     "stylelint": "stylelint **/**.{css,scss,sass}",
     "stylelint:fix": "stylelint **/**.{css,scss,sass} --fix",
     "dev": "vite",
+    "dev:prod": "vite --mode production",
     "build": "vite build",
     "preview": "vite preview --port 8080",
     "commitlint": "commitlint --edit"
