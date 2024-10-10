@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-bank-api
+spec:
+  template:
+    spec:
+      containers:
+        - name: simple-bank-api
+          env:
+            - name: GIN_MODE
+              value: release
+            - name: DB_SOURCE
+              valueFrom:
+                secretKeyRef:
+                  key: DB_SOURCE
+                  name: db-source-secret

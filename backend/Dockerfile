@@ -1,30 +1,28 @@
 # syntax=docker/dockerfile:1
 # https://docs.docker.com/go/dockerfile-reference/
 
-# 版本号
-ARG VERSION=latest
 # 定义基础镜像的 Golang 版本
-ARG GO_IMAGE=golang:1.23.1-alpine3.20
-# 构建的目标平台
-ARG GOOS=linux
-# 构建的目标架构
-ARG ARCH=amd64
-# Go的环境变量, 例如alpine镜像不内置gcc,则关闭CGO很有效
-ARG CGO_ENABLED=0
+ARG GOIMAGE=golang:1.23.1-alpine3.20
 
-FROM --platform=$BUILDPLATFORM ${GO_IMAGE} AS build
+FROM --platform=$BUILDPLATFORM ${GOIMAGE} AS build
 WORKDIR /src
 
-COPY . .
-RUN ls
+# 版本号
+ARG VERSION=latest
 
-RUN ls
-RUN pwd
-RUN ls /src
+# Go的环境变量, 例如alpine镜像不内置gcc,则关闭CGO很有效
+ARG GOOS=linux
+ARG GOARCH=amd64
+ARG CGOENABLED=0
+
+# Go的环境变量, 例如alpine镜像不内置gcc,则关闭CGO很有效
+ARG GO_PROXY=https://proxy.golang.com.cn,direct
+
+COPY . .
 
 # 设置环境变量
 # RUN go env -w GOPROXY=https://goproxy.cn,direct
-RUN go env -w GOPROXY=https://proxy.golang.com.cn,direct
+RUN go env -w GOPROXY=$GO_PROXY
 
 # 利用 Docker 层缓存机制，单独下载依赖项，提高后续构建速度。
 # 使用缓存挂载和绑定挂载技术，避免不必要的文件复制到容器中。
@@ -33,22 +31,26 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,source=go.mod,target=go.mod \
     go mod download -x
 
-# RUN go mod tidy
-
 # 获取代码版本号，用于编译时标记二进制文件
+RUN echo "$a: $GOOS $GOARCH $CGOENABLED"
 RUN VERSION=$(git describe --tags --always) || true
 RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \
-    CGO_ENABLED=$CGO_ENABLED GOOS=$GOOS GOARCH=$ARCH \
+    GOOS=$GOOS \
+    GOARCH=$GOARCH \
+    CGOENABLED=$CGOENABLED \
     go build -o /bin/main .
    # 带版本的形式: go build -ldflags="-X main.Version=${VERSION}" -o /bin/main .
    # 多个服务的形式: go build -o /bin/ ./...
 
 FROM alpine:latest AS final
+# 从构建阶段复制编译好的 Go 应用程序到运行阶段
+COPY --from=build /bin/main /bin/
 
 # 用户进程ID
 ARG UID=10001
-# 后端程序的gRPC端口(如果有), 例如30001
+
+# 后端程序的HTTP/gRPC端口
 ARG PORT=8080
 
 # 修改镜像源
@@ -67,9 +69,6 @@ RUN echo 'Asia/Shanghai' >/etc/timezone
 
 USER appuser
 
-# 从构建阶段复制编译好的 Go 应用程序到运行阶段
-COPY --from=build /bin/main /bin/
-
 # 复制配置文件
 COPY app.env .
 
@@ -79,29 +78,54 @@ EXPOSE $PORT
 # 设置容器启动时执行的命令
 CMD ["/bin/main"]
 
-# 打包, 进到当前的backend目录
-# export version=v2.0.0
-# export repository="lisa/backend"
-# docker build \
+# 构建Docker所属的当前平台与架构的二进制文件, 进到当前的backend目录
+# export VERSION=v2.0.0
+# export REPOSITORY="lisa/backend"
+# export GOOS=linux
+# export GOARCH=amd64
+# export PORT=8080
+# docker build . \
 #   --progress=plain \
-#   -t $repository:$version . \
-#   --build-arg GOOS=darwin \
-#   --build-arg ARCH=arm64 \
-#   --build-arg CGO_ENABLED=0 \
-#   --build-arg GO_IMAGE=golang:1.23.1-alpine3.20 \
-#   --build-arg version=$version \
-#   --build-arg PORT=8080
+#   -t $REPOSITORY:$VERSION \
+#   --build-arg CGOENABLED=0 \
+#   --build-arg GOIMAGE=golang:1.23.1-alpine3.20 \
+#   --build-arg GOOS=$GOOS \
+#   --build-arg GOARCH=$GOARCH \
+#   --build-arg VERSION=$VERSION \
+#   --build-arg PORT=$PORT
+
+# 构建多架构的二进制文件, 需要在Docker Desktop 启用 containerd 映像存储
+# https://docs.docker.com/desktop/containerd/#enable-the-containerd-image-store
+# export VERSION=v2.0.0
+# export REPOSITORY="lisa/backend"
+# export GOOS=linux
+# export GOARCH=amd64
+# export PORT=8080
+# docker buildx build . \
+#   --progress=plain \
+#   -t $REPOSITORY:$VERSION \
+#   --build-arg CGOENABLED=0 \
+#   --build-arg GOIMAGE=golang:1.23.1-alpine3.20 \
+#   --build-arg VERSION=$VERSION \
+#   --build-arg PORT=$PORT \
+#   --build-arg GOOS=$GOOS \
+#   --build-arg GOARCH=$GOARCH \
+#   --platform $GOOS/$GOARCH
 
 # 推送
 # export register="ccr.ccs.tencentyun.com"
-# docker tag $repository:$version $register/$repository:$version
-# docker push $register/$repository:$version
+# docker tag $REPOSITORY:$VERSION $register/$REPOSITORY:$VERSION
+# docker push $register/$REPOSITORY:$VERSION
 
 # 拉取
-# docker pull $register/$repository:$version
+# export GOOS=linux
+# export GOARCH=amd64
+# docker pull $register/$REPOSITORY:$VERSION --platform $GOOS/GOARCH
 
 # 运行
 # docker run \
 # --rm \
 # -p 8080:8080 \
-# $register/container:$version
+# -e GIN_MODE=release \
+# -e DB_SOURCE="postgresql://postgres:postgres@159.75.231.54:5432/simple_bank?sslmode=disable" \
+# $register/container:$VERSION

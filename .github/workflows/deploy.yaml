@@ -1,0 +1,182 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Deploy to production
+run-name: ${{ github.actor }} is learning GitHub Actions
+
+on:
+  push:
+    branches: [ "main", "beta" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GIN_MODE: release
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres:15-alpine
+        # Provide the password for postgres
+        env:
+          # 数据库用户名
+          POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+          # 数据库用户密码
+          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+          # 此可选环境变量可用于为首次启动映像时创建的默认数据库定义不同的名称。如果未指定，则将使用 POSTGRES_USER 的值。
+          POSTGRES_DB: ${{secrets.POSTGRES_DB}}
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        # Maps tcp port 5432 on service container to the host
+        ports:
+          - '5432:5432'
+    steps:
+      - # 检出仓库中的代码，确保脚本可以访问仓库中的所有文件
+        name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+  #      - name: Install migrate
+  #        run: |
+  #          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.18.1/migrate.linux-amd64.tar.gz | tar xvz
+  #          sudo mv migrate /usr/bin/
+  #          which migrate
+
+  #      - name: Run database migrate
+  #        run: |
+  #          make migrate-up
+
+  #      - name: Test
+  #        run: |
+  #          make test
+
+  build:
+    needs: test
+    name: Build image
+    runs-on: ubuntu-latest
+    env:
+      GOOS: linux
+      GOARCH: amd64
+      VERSION: v2.0.0
+      GOIMAGE: golang:1.23.1-alpine3.20
+      CGOENABLED: 0
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend
+    steps:
+      -
+        # 检出仓库中的代码，确保脚本可以访问仓库中的所有文件
+        name: Checkout repository
+        uses: actions/checkout@v4
+
+      -
+        # 设置 QEMU 仿真器。允许你在 x86 架构的主机上构建和测试其他架构的 Docker 镜像
+        # https://github.com/docker/setup-qemu-action
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      -
+        # Buildx 是 Docker 的一个插件，支持多平台构建
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      -
+        # 登录到容器注册表
+        name: Login Cloud Registry
+        run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login ${{ secrets.REGISTRY }} --username ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+
+      -
+        # 构建, 标记, 推送镜像到容器注册表
+        name: Build tag and push image to Cloud Registry
+        env:
+          VERSION: v2.0.0
+          PORT: 8080
+          CGO_ENABLED: 0
+          GO_IMAGE: golang:1.23.1-alpine3.20
+
+        run: |
+          docker buildx build . \
+            --progress=plain \
+            -t actions/backend \
+            --build-arg GOIMAGE=$GOIMAGE \
+            --build-arg CGOENABLED=$CGOENABLED \
+            --build-arg VERSION=$VERSION \
+            --build-arg PORT=$PORT \
+            --build-arg GOOS=$GOOS \
+            --build-arg GOARCH=$GOARCH \
+            --platform $GOOS/$GOARCH \
+            --load
+          
+          docker tag actions/backend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:latest
+          docker tag actions/backend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$VERSION
+          docker tag actions/backend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA
+          
+          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:latest
+          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$VERSION
+          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA
+
+
+  deploy:
+    needs: build
+    env:
+      DEPLOYMENT_NAME: simple-bank-api
+      NAMESPACE: bank
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend/deploy/application/overlays/production
+    steps:
+      - # 检出仓库中的代码，确保脚本可以访问仓库中的所有文件
+        name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Kustomize
+        run: |
+          curl -o kustomize --location https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
+          chmod u+x ./kustomize
+          ./kustomize version
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl{,.sha256}"
+          echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
+          chmod +x ./kubectl
+
+      - name: Connect Kubernetes Cluster
+        run: |
+          mkdir -pv ~/.kube/
+          echo "${{secrets.KUBE_CONF}}" > ~/.kube/config
+          ./kubectl get ns
+
+      # Deploy the Docker image to the TKE cluster
+      - name: Deploy
+        run: |
+          ./kubectl create ns $NAMESPACE
+          if ! ./kubectl delete secret db-source-secret; then
+            echo "Secret db-source-secret not found, skipping deletion."
+          fi
+          ./kubectl create secret generic db-source-secret --from-literal='DB_SOURCE=${{ secrets.DB_SOURCE }}' --namespace=$NAMESPACE
+          ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA
+          ./kustomize build . | kubectl apply -f -
+          ./kubectl rollout status deploy
+          ./kubectl get po -owide
+          ./kubectl get svc

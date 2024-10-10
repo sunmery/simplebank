@@ -18,6 +18,11 @@ func main() {
 		panic(err)
 	}
 
+	println(cfg.DBSource)
+	println(cfg.ServerAddress)
+	println(cfg.TokenSymmetricKey)
+	println(cfg.AccessTokenDuration)
+
 	conn, newDBErr := pgxpool.New(context.Background(), cfg.DBSource)
 	if newDBErr != nil {
 		panic(fmt.Sprintf("Unable to connect to database: %v", err))
