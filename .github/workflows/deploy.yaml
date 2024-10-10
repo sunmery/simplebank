@@ -170,6 +170,10 @@ jobs:
       # Deploy the Docker image to the TKE cluster
       - name: Deploy
         run: |
+          ./kubectl create ns $NAMESPACE
+          if ! ./kubectl delete secret db-source-secret; then
+            echo "Secret db-source-secret not found, skipping deletion."
+          fi
           ./kubectl create secret generic db-source-secret --from-literal='DB_SOURCE=${{ secrets.DB_SOURCE }}' --namespace=$NAMESPACE
           ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA
           ./kustomize build . | kubectl apply -f -
