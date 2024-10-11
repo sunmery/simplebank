@@ -24,6 +24,9 @@ RUN cd /web
 # Alpine v3.19:
 # apk add --no-cache libc6-compat
 
+# proxy
+# RUN npm config set registry https://registry.npmmirror.com
+
 # 缓存.npm依赖
 RUN --mount=type=cache,target=/root/.npm \
     npm install -g pnpm@$PACK_VERSION
@@ -63,11 +66,11 @@ RUN pnpm build
 #RUN rm -rf node_modules
 
 # nginx QUIC + HTTP3 大小约为74.9MB
-FROM ghcr.io/macbre/nginx-http3
+FROM ghcr.io/macbre/nginx-http3:latest
 # 使用nginx代理 web 项目的映射
 
 # 把上一步骤打包好的的 dist目录传递到 nginx 默认的 html 目录作为映射
-COPY --from=builder /web/dist/ /usr/share/nginx/html/
+COPY --from=builder /web/dist/ /etc/nginx/html/
 
 # 挂载 Nginx 的必要文件,
 # /etc/nginx/ssl/是 SSL 配置,不需要删掉即可
@@ -75,7 +78,7 @@ COPY --from=builder /web/dist/ /usr/share/nginx/html/
 # /var/cache/nginx/是 nginx 缓存, 不需要删掉即可
 # /etc/nginx/conf/ 是 nginx 的配置文件目录, 必须保留
 # /usr/share/nginx/html/是 nginx 的 html 目录, 必须保留
-VOLUME ["/etc/nginx/html/","/etc/nginx/ssl/","/etc/nginx/conf.d/"]
+VOLUME ["/etc/nginx/ssl/","/etc/nginx/conf.d/"]
 
 EXPOSE ${FRONTEND_PORT1}
 EXPOSE ${FRONTEND_PORT2}
@@ -89,7 +92,7 @@ CMD ["nginx", "-g", "daemon off;"]
 # -t: 标签, 例如: lisa/frontend:v2
 # frontend/ : 构建的目录, 相对于Dockerfile的路径, 与Docker相同的目录使用 . 表示当前目录
 # -f frontend/Dockerfile: 相对路径, 指定Dockerfile的路径
-# docker build --progress=plain --no-cache -t lisa/frontend:v2 .
+# docker build --progress=plain --no-cache -t lisa/frontend:v2.0.0 .
 
 # 运行示例
 # docker run -itd \
