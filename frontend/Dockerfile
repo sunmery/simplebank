@@ -61,8 +61,8 @@ RUN pnpm build
 
 # nginx QUIC + HTTP3 大小约为74.9MB
 FROM ghcr.io/macbre/nginx-http3:latest
-ARG FRONTEND_PORT1=80
-ARG FRONTEND_PORT2=443
+ARG HTTP_PORT=80
+ARG HTTPS_PORT=443
 
 # 使用nginx代理 web 项目的映射
 
@@ -70,16 +70,17 @@ ARG FRONTEND_PORT2=443
 COPY --from=builder /src/dist/ /etc/nginx/html/
 COPY --from=builder /src/dist/ /usr/share/nginx/html/
 
-# 挂载 Nginx 的必要文件,
-# /etc/nginx/ssl/是 SSL 配置,不需要删掉即可
-# /var/log/nginx/ 是 nginx 日志,不需要删掉即可
-# /var/cache/nginx/是 nginx 缓存, 不需要删掉即可
-# /etc/nginx/conf/ 是 nginx 的配置文件目录, 必须保留
-# /usr/share/nginx/html/是 nginx 的 html 目录, 必须保留
-VOLUME ["/etc/nginx/ssl/","/etc/nginx/conf.d/"]
+# nginx.conf配置文件
+COPY deploy/application/overlays/production/nginx.conf /etc/nginx/conf.d/
 
-EXPOSE ${FRONTEND_PORT1}
-EXPOSE ${FRONTEND_PORT2}
+# TODO: 剥离应用程序自带的ssl文件. 启用nginx SSL所需的文件
+# COPY deploy/application/overlays/production/ssl /etc/nginx/ssl/
+
+# 或者引用远程的nginx.conf, 可以随时修改远程的配置文件
+# ADD https://example.com/nginx.conf
+
+EXPOSE ${HTTP_PORT}
+EXPOSE ${HTTPS_PORT}
 
 # 运行 nginx 服务
 CMD ["nginx", "-g", "daemon off;"]
@@ -95,7 +96,6 @@ CMD ["nginx", "-g", "daemon off;"]
 # 运行示例
 # docker run -itd \
 # --name nginx-quic \
-# -v /home/docker/nginx/conf.d:/etc/nginx/conf.d \
 # -v /home/docker/nginx/ssl:/etc/nginx/ssl \
 # -p '443:443/tcp' \
 # -p '443:443/udp' \

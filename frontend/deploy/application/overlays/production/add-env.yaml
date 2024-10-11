@@ -7,3 +7,8 @@ spec:
     spec:
       containers:
         - name: simple-bank-web
+          volumeMounts:
+            - mountPath: /etc/nginx/ssl/
+              name: nginx-ssl-volume
+            - mountPath: /etc/nginx/conf.d/
+              name: nginx-conf
