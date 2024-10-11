@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-bank-web
+  labels:
+    app: simple-bank-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-bank-web
+  template:
+    metadata:
+      name: simple-bank-web
+      labels:
+        app: simple-bank-web
+    spec:
+      containers:
+        - name: simple-bank-web
+          image: example
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 443
+              protocol: TCP
+      volumes:
+        - name: nginx-conf-volume
+
+      restartPolicy: Always
+

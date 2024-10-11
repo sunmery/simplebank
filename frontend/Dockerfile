@@ -1,19 +1,14 @@
 # syntax=docker/dockerfile:1
-# https://docs.docker.com/go/dockerfile-reference/
+# https://docs.docker.com/go/dockerfile-reference/\
 
 ARG NODE_VERSION=node:22-alpine
-ARG PACK_VERSION=latest
-ARG FRONTEND_PORT1=80
-ARG FRONTEND_PORT2=443
-ARG BUILD_DIR_NAME=dist
-
 FROM $NODE_VERSION AS builder
+
+ARG PACK_VERSION=latest
+
 # FROM node:slim 仅包含运行 node 所需的最小包
 
-WORKDIR /web
-
-# 分离环境
-RUN cd /web
+WORKDIR /src
 
 # 默认使用生产环境
 # ENV NODE_ENV production
@@ -25,7 +20,7 @@ RUN cd /web
 # apk add --no-cache libc6-compat
 
 # proxy
-# RUN npm config set registry https://registry.npmmirror.com
+RUN npm config set registry https://registry.npmmirror.com
 
 # 缓存.npm依赖
 RUN --mount=type=cache,target=/root/.npm \
@@ -36,7 +31,7 @@ RUN pnpm -v
 COPY package.json .
 
 # proxy
-# RUN pnpm config set registry https://registry.npmmirror.com
+RUN pnpm config set registry https://registry.npmmirror.com
 
 # 下载依赖作为一个单独的步骤，以利用Docker的缓存。
 # 利用缓存挂载到/root/.local/share/pnpm/store加速后续构建。
@@ -55,9 +50,8 @@ COPY . .
 
 RUN node -v
 RUN pnpm -v
-RUN ls /web
+RUN ls /src
 RUN pwd
-RUN cd ..
 
 # 打包
 RUN pnpm build
@@ -67,10 +61,14 @@ RUN pnpm build
 
 # nginx QUIC + HTTP3 大小约为74.9MB
 FROM ghcr.io/macbre/nginx-http3:latest
+ARG FRONTEND_PORT1=80
+ARG FRONTEND_PORT2=443
+
 # 使用nginx代理 web 项目的映射
 
 # 把上一步骤打包好的的 dist目录传递到 nginx 默认的 html 目录作为映射
-COPY --from=builder /web/dist/ /etc/nginx/html/
+COPY --from=builder /src/dist/ /etc/nginx/html/
+COPY --from=builder /src/dist/ /usr/share/nginx/html/
 
 # 挂载 Nginx 的必要文件,
 # /etc/nginx/ssl/是 SSL 配置,不需要删掉即可
@@ -97,13 +95,12 @@ CMD ["nginx", "-g", "daemon off;"]
 # 运行示例
 # docker run -itd \
 # --name nginx-quic \
-# -v /home/nginx/html:/home/docker/nginx/html \
-# -v /home/nginx/conf:/home/docker/nginx/conf.d \
-# -v /home/nginx/ssl:/home/docker/nginx/ssl \
+# -v /home/docker/nginx/conf.d:/etc/nginx/conf.d \
+# -v /home/docker/nginx/ssl:/etc/nginx/ssl \
 # -p '443:443/tcp' \
 # -p '443:443/udp' \
 # -p 80:80 \
-# ccr.ccs.tencentyun.com/lisa/frontend:v2.0.0
+# lisa/frontend:v2.0.0
 
 # docker tag lisa/frontend:v2.0.0 ccr.ccs.tencentyun.com/lisa/frontend:v2.0.0
 # docker push ccr.ccs.tencentyun.com/lisa/frontend:v2.0.0
