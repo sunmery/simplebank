@@ -36,7 +36,7 @@ export default defineConfig(async ({command}) => {
 			},
 			resolve: {
 				alias: {
-					'@': resolve(__dirname, 'src'),
+					'@': resolve(__dirname, 'src/'),
 				},
 			},
 		}
@@ -60,7 +60,7 @@ export default defineConfig(async ({command}) => {
 			// 空字符串或 ./（用于嵌入形式的开发）
 			resolve: {
 				alias: {
-					'@/': resolve(__dirname, 'src/'),
+					'@': resolve(__dirname, 'src/'),
 				},
 			},
 			base: './',

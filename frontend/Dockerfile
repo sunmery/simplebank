@@ -1,5 +1,7 @@
+# syntax=docker/dockerfile:1
+# https://docs.docker.com/go/dockerfile-reference/
 
-ARG NODE_VERSION=node:22-slim
+ARG NODE_VERSION=node:22-alpine
 ARG PACK_VERSION=latest
 ARG FRONTEND_PORT1=80
 ARG FRONTEND_PORT2=443
@@ -92,13 +94,13 @@ CMD ["nginx", "-g", "daemon off;"]
 # 运行示例
 # docker run -itd \
 # --name nginx-quic \
-# -v /home/nginx/html:/etc/nginx/html \
-# -v /home/nginx/conf:/etc/nginx/conf.d \
-# -v /home/nginx/ssl:/etc/nginx/ssl \
+# -v /home/nginx/html:/home/docker/nginx/html \
+# -v /home/nginx/conf:/home/docker/nginx/conf.d \
+# -v /home/nginx/ssl:/home/docker/nginx/ssl \
 # -p '443:443/tcp' \
 # -p '443:443/udp' \
 # -p 80:80 \
-# ccr.ccs.tencentyun.com/lisa/frontend:v2
+# ccr.ccs.tencentyun.com/lisa/frontend:v2.0.0
 
-# docker tag lisa/frontend:v6.0.0 ccr.ccs.tencentyun.com/lisa/frontend:v6.0.0
-# docker push ccr.ccs.tencentyun.com/lisa/frontend:v6.0.0
+# docker tag lisa/frontend:v2.0.0 ccr.ccs.tencentyun.com/lisa/frontend:v2.0.0
+# docker push ccr.ccs.tencentyun.com/lisa/frontend:v2.0.0
