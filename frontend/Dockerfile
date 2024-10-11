@@ -1,5 +1,5 @@
 
-ARG NODE_VERSION=node:20.11.0-alpine
+ARG NODE_VERSION=node:22-slim
 ARG PACK_VERSION=latest
 ARG FRONTEND_PORT1=80
 ARG FRONTEND_PORT2=443
@@ -87,7 +87,7 @@ CMD ["nginx", "-g", "daemon off;"]
 # -t: 标签, 例如: lisa/frontend:v2
 # frontend/ : 构建的目录, 相对于Dockerfile的路径, 与Docker相同的目录使用 . 表示当前目录
 # -f frontend/Dockerfile: 相对路径, 指定Dockerfile的路径
-# docker build --progress=plain --no-cache -t lisa/frontend:v2 frontend/ -f frontend/Dockerfile
+# docker build --progress=plain --no-cache -t lisa/frontend:v2 .
 
 # 运行示例
 # docker run -itd \

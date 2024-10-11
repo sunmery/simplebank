@@ -1,7 +1,7 @@
 import type {ChangeEvent} from 'react'
 import {useState} from 'react'
 import {skipToken, useQuery} from '@tanstack/react-query'
-import {Alert} from '@mui/joy'
+import {Alert, Autocomplete, Box, Button, Input, Stack} from '@mui/joy'
 
 interface RegisterUser {
 	username: string
@@ -14,7 +14,7 @@ const createUser = async (user: RegisterUser) => {
 	try {
 		const res = await fetch(`${import.meta.env.VITE_URL}/users`, {
 			method: 'PUT',
-			headers: {'Content-Type': 'application/json'},
+			headers: {'Content-Type': 'application/json', 'Host': 'api.lookeke.com'},
 			body: JSON.stringify({...user}),
 		})
 		const data: RegisterUser = await res.json()
@@ -39,10 +39,10 @@ interface User {
  */
 export default function Register() {
 	const [user, setUser] = useState<User>({
-		username: '',
-		fullName: '',
-		email: '',
-		password: '',
+		username: 'test user',
+		fullName: 'test fullName',
+		email: 'test@example.com',
+		password: '123456',
 	})
 	const [query, setQuery] = useState<boolean>(false)
 
@@ -79,58 +79,59 @@ export default function Register() {
 	}
 
 	return (
-		<>
-			<label htmlFor="">
-				username:
-				<input
-					type="text"
-					name="username"
-					id=""
-					value={user.username}
-					onChange={handleInputChange}
-				/>
-			</label>
-			<label htmlFor="">
-				Fullname:
-				<input
-					type="text"
-					name="fullName"
-					id=""
-					onChange={handleInputChange}
-				/>
-			</label>
-			<label htmlFor="">
-				Email:
-				<input
-					type="email"
-					name="email"
-					id=""
-					onChange={handleInputChange}
-				/>
-			</label>
-			<label htmlFor="">
-				Password:
-				<input
-					type="password"
-					name="password"
-					id=""
-					onChange={handleInputChange}
-				/>
-			</label>
-			<label htmlFor="">
-				重复密码:
-				<input
-					type="password"
-					name="repPassword"
-					id=""
-				/>
-			</label>
-			<button
-				type="button"
+		<Stack
+			direction="column"
+			spacing={1}
+			sx={{
+				justifyContent: 'center',
+				alignItems: 'center',
+			}}
+		>
+			Username:
+			<Input
+				type="outlined"
+				name="username"
+				id=""
+				value={user.username}
+				onChange={handleInputChange}
+			/>
+			FullName:
+			<Input
+				type="text"
+				name="fullName"
+				id=""
+				value={user.fullName}
+				onChange={handleInputChange}
+			/>
+			Email:
+			<Input
+				type="email"
+				name="email"
+				id=""
+				value={user.email}
+				onChange={handleInputChange}
+			/>
+			Password:
+			<Input
+				type="password"
+				name="password"
+				id=""
+				value={user.password}
+				onChange={handleInputChange}
+			/>
+			重复密码:
+			<Input
+				type="password"
+				name="repPassword"
+				id=""
+				value={user.password}
+			/>
+			<Button
+				type="submit"
 				onClick={handleRegister}
 			>
 				Register
-			</button>
-		</>
+			</Button>
+		</Stack>
 	)
 }
