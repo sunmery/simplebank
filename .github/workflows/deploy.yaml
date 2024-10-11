@@ -201,7 +201,13 @@ jobs:
               }
           }
           EOF
+          if ! ./kubectl delete configmap nginx-conf; then
+            echo "Secret db-source-secret not found, skipping deletion."
+          fi
           ./kubectl create configmap nginx-conf --from-file=/tmp/nginx.conf -n ${NAMESPACE}
+          if ! ./kubectl delete secret nginx-ssl; then
+            echo "Secret db-source-secret not found, skipping deletion."
+          fi
           ./kubectl create secret generic nginx-ssl \
           --from-file /tmp/nginx.crt \
           --from-file /tmp/nginx.key \
@@ -372,7 +378,12 @@ jobs:
       # Deploy the Docker image to the TKE cluster
       - name: Deploy
         run: |
-          ./kubectl create ns $NAMESPACE
+          ./kubectl get namespace ${NAMESPACE} &> /dev/null
+          if [ $? -eq 0 ]; then
+            echo "Namespace ${NAMESPACE} already exists."
+          else
+            ./kubectl create ns $NAMESPACE
+          fi
           if ! ./kubectl delete secret db-source-secret; then
             echo "Secret db-source-secret not found, skipping deletion."
           fi
