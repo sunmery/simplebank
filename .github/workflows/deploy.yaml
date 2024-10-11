@@ -127,7 +127,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-director: frontend
+        working-directory: frontend
     steps:
       - # 检出仓库中的代码，确保脚本可以访问仓库中的所有文件
         name: Checkout repository
