@@ -154,6 +154,7 @@ jobs:
       # Deploy the Docker image to the TKE cluster
       - name: Deploy
         run: |
+          ./kubectl config set-context --current --namespace $NAMESPACE
           echo "${{secrets.SSL_CERTIFICATE}}" > /tmp/nginx.crt
           echo "${{secrets.SSL_PRIVATE_KEY}}" > /tmp/nginx.key
           cat <<EOF > /tmp/nginx.conf
@@ -201,19 +202,22 @@ jobs:
               }
           }
           EOF
-          if ! ./kubectl delete configmap nginx-conf; then
-            echo "Secret db-source-secret not found, skipping deletion."
+          if ! ./kubectl get configmap nginx-conf; then
+            echo "configmap nginx-conf not found, skipping deletion."
+          else
+            ./kubectl delete configmap nginx-conf
           fi
-          ./kubectl create configmap nginx-conf --from-file=/tmp/nginx.conf -n ${NAMESPACE}
-          if ! ./kubectl delete secret nginx-ssl; then
-            echo "Secret db-source-secret not found, skipping deletion."
+          ./kubectl create configmap nginx-conf --from-file=/tmp/nginx.conf
+          
+          if ! ./kubectl get secret nginx-ssl; then
+            echo "secret nginx-ssl not found, skipping deletion."
+          else
+            ./kubectl delete secret nginx-ssl
           fi
           ./kubectl create secret generic nginx-ssl \
           --from-file /tmp/nginx.crt \
-          --from-file /tmp/nginx.key \
-          -n ${NAMESPACE}
-          ./kubectl get configmap nginx-conf -n ${NAMESPACE} -o yaml
-          ./kubectl get secret nginx-ssl -n ${NAMESPACE} -o yaml
+          --from-file /tmp/nginx.key
+
           ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:${GITHUB_SHA}
           ./kustomize build . | kubectl apply -f -
           ./kubectl rollout status deploy
