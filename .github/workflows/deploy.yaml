@@ -52,7 +52,8 @@ jobs:
         run: |
           # npm install -g pnpm@latest
           #pnpm test
-          pnpm i
+          # pnpm 实现的等效npm ci, 即只根据pnpm-lock.yaml的依赖进行安装
+          pnpm install --frozen-lockfile
           pnpm build
 
   frontend-build-image:
