@@ -7,6 +7,9 @@ spec:
     app: simple-bank-web
   ports:
     - protocol: TCP
+      port: 80
+      targetPort: 30003
+    - protocol: TCP
       port: 443
       targetPort: 30004
   type: NodePort

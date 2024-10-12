@@ -369,11 +369,12 @@ jobs:
         run: |
           mkdir -pv ~/.kube/
           echo "${{secrets.KUBE_CONF}}" > ~/.kube/config
-          ./kubectl config set-context --current --namespace $BACKEND_NAMESPACE
 
       # Deploy the Docker image to the TKE cluster
       - name: Deploy
         run: |
+          ./kubectl config set-context --current --namespace $BACKEND_NAMESPACE
+          
           if ./kubectl get namespace ${NAMESPACE}; then
             echo "namespaces ${NAMESPACE} already exists, skip create"
           else
