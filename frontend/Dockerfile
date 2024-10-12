@@ -68,7 +68,7 @@ ARG HTTPS_PORT=443
 
 # 把上一步骤打包好的的 dist目录传递到 nginx 默认的 html 目录作为映射
 COPY --from=builder /src/dist/ /etc/nginx/html/
-COPY --from=builder /src/dist/ /usr/share/nginx/html/
+# COPY --from=builder /src/dist/ /usr/share/nginx/html/
 
 # nginx.conf配置文件
 # COPY deploy/application/overlays/production/nginx.conf /etc/nginx/conf.d/

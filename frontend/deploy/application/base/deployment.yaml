@@ -20,6 +20,9 @@ spec:
           image: example
           imagePullPolicy: Always
           ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
             - name: http3
               containerPort: 4430
               protocol: TCP

@@ -67,7 +67,7 @@ export default defineConfig(async ({command}) => {
 			mode: 'production',
 			server: {
 				host: '0.0.0.0',
-				port: 4430,
+				port: 443,
 				strictPort: true,
 			},
 
