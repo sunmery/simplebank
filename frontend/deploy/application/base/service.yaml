@@ -15,5 +15,5 @@ spec:
       port: 4430
       targetPort: 4430
       protocol: UDP
-      nodePort: 30004
+      nodePort: 30003
   type: NodePort
