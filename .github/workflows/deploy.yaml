@@ -28,20 +28,25 @@ jobs:
         uses: actions/checkout@v4
 
       - # 设置Node版本, 最低为20
-        name:
+        name: Setup node version
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
           cache-dependency-path: '**/package-lock.json'
 
+      # - name: Test frontend
+      #   # 自动下载pnpm
+      #   # 注意：pnpm 缓存支持需要 pnpm 版本 >= 6.10.0
+      #   run: |
+      #     npm install -g pnpm@latest
+      #     #pnpm test
+
       - name: Build frontend
         # 自动下载pnpm
         # 注意：pnpm 缓存支持需要 pnpm 版本 >= 6.10.0
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
         run: |
+          npm install -g pnpm@latest
           #pnpm test
           pnpm build
 
