@@ -50,8 +50,9 @@ jobs:
         # 自动下载pnpm
         # 注意：pnpm 缓存支持需要 pnpm 版本 >= 6.10.0
         run: |
-          npm install -g pnpm@latest
+          # npm install -g pnpm@latest
           #pnpm test
+          pnpm ci
           pnpm build
 
   frontend-build-image:
