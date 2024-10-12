@@ -37,7 +37,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
-          # cache-dependency-path: 'pnpm-lock.yaml'
+          cache-dependency-path: 'frontend/pnpm-lock.yaml'
 
       # - name: Test frontend
       #   # 自动下载pnpm
