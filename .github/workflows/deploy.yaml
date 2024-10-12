@@ -160,6 +160,7 @@ jobs:
       - name: Deploy
         run: |
           ./kubectl config set-context --current --namespace $FRONTEND_NAMESPACE
+          
           echo "${{secrets.SSL_CERTIFICATE}}" > /tmp/nginx.crt
           echo "${{secrets.SSL_PRIVATE_KEY}}" > /tmp/nginx.key
           cat <<EOF > /tmp/nginx.conf
@@ -209,16 +210,18 @@ jobs:
           EOF
           if ./kubectl get cm nginx-conf; then
             ./kubectl delete cm nginx-conf
+          else
+            ./kubectl create cm nginx-conf --from-file=/tmp/nginx.conf
           fi
-          ./kubectl create cm nginx-conf --from-file=/tmp/nginx.conf
           
           if ./kubectl get secret nginx-ssl; then
             ./kubectl delete secret nginx-ssl
+          else
+            ./kubectl create secret generic nginx-ssl \
+            --from-file /tmp/nginx.crt \
+            --from-file /tmp/nginx.key
           fi
-          ./kubectl create secret generic nginx-ssl \
-          --from-file /tmp/nginx.crt \
-          --from-file /tmp/nginx.key
-
+          
           ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:${GITHUB_SHA}
           # ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:latest
           ./kustomize build . | kubectl apply -f -
