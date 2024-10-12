@@ -124,7 +124,7 @@ jobs:
     needs: frontend-build-image
     runs-on: ubuntu-latest
     env:
-      NAMESPACE: bank
+      FRONTEND_NAMESPACE: bank
     defaults:
       run:
         shell: bash
@@ -155,7 +155,7 @@ jobs:
       # Deploy the Docker image to the TKE cluster
       - name: Deploy
         run: |
-          ./kubectl config set-context --current --namespace $NAMESPACE
+          ./kubectl config set-context --current --namespace $FRONTEND_NAMESPACE
           echo "${{secrets.SSL_CERTIFICATE}}" > /tmp/nginx.crt
           echo "${{secrets.SSL_PRIVATE_KEY}}" > /tmp/nginx.key
           cat <<EOF > /tmp/nginx.conf
@@ -342,7 +342,7 @@ jobs:
     needs: backend-build
     env:
       DEPLOYMENT_NAME: simple-bank-api
-      NAMESPACE: bank
+      BACKEND_NAMESPACE: bank
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -369,18 +369,21 @@ jobs:
         run: |
           mkdir -pv ~/.kube/
           echo "${{secrets.KUBE_CONF}}" > ~/.kube/config
-          ./kubectl get ns
+          ./kubectl config set-context --current --namespace $BACKEND_NAMESPACE
 
       # Deploy the Docker image to the TKE cluster
       - name: Deploy
         run: |
           if ./kubectl get namespace ${NAMESPACE}; then
-            ./kubectl create ns $NAMESPACE
+            echo "namespaces ${NAMESPACE} already exists, skip create"
+          else
+            ./kubectl create namespace ${NAMESPACE}
           fi
+          
           if ./kubectl delete secret db-source-secret; then
             ./kubectl delete secret db-source-secret
           fi 
-          ./kubectl create secret generic db-source-secret --from-literal='DB_SOURCE=${{ secrets.DB_SOURCE }}' --namespace=$NAMESPACE
+          ./kubectl create secret generic db-source-secret --from-literal='DB_SOURCE=${{ secrets.DB_SOURCE }}'
           
           ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA
           ./kustomize build . | kubectl apply -f -

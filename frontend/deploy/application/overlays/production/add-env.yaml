@@ -5,10 +5,17 @@ metadata:
 spec:
   template:
     spec:
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: nginx-conf
+        - name: nginx-ssl
+          secret:
+            secretName: nginx-ssl
       containers:
         - name: simple-bank-web
           volumeMounts:
-            - mountPath: /etc/nginx/ssl/
-              name: nginx-ssl-volume
             - mountPath: /etc/nginx/conf.d/
               name: nginx-conf
+            - mountPath: /etc/nginx/ssl/
+              name: nginx-ssl
