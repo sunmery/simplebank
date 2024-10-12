@@ -20,22 +20,18 @@ jobs:
   #       working-directory: frontend
   #
   #   steps:
-  #     - uses: actions/checkout@v3
+  #     - uses: actions/checkout@v4
   #
   #     # 使用 actions 脚本，创建一个 node 运行环境并使用with参数指定了node版本为 14
-  #     - uses: actions/setup-node@v3
+  #     - uses: actions/setup-node@v4
   #       with:
   #         node-version: '20'
-  #       # 安装依赖
-  #       #- name: Installing Dependencies
-  #       # 如果命中缓存，就不需要安装依赖，使用缓存即可
-  #       # if: steps.cache-dependencies.outputs.cache-hit != 'true'
-  #       # run: npm install
+  #         cache: 'npm'
   #     # 打包
   #     - name: Build Web
   #       run: |
   #         npm i -g pnpm
-  #         pnpm i
+  #         pnpm ci
   #         pnpm build
   #
   #     # 为node_modules设置缓存
@@ -216,24 +212,19 @@ jobs:
           EOF
           ./kubectl delete cm nginx-conf || true
           ./kubectl create cm nginx-conf --from-file=/tmp/nginx.conf
-          # if ! ./kubectl get cm nginx-conf; then
-          #   ./kubectl delete cm nginx-conf
-          # else 
-          #   echo "不存在"
-          #   ./kubectl create cm nginx-conf --from-file=/tmp/nginx.conf
-          # fi
-          
-          
-          if ! ./kubectl get secret nginx-ssl; then
-            ./kubectl delete secret nginx-ssl
-          fi
+
+          ./kubectl delete cm nginx-conf || true
+          ./kubectl create cm nginx-conf --from-file=/tmp/nginx.conf
+
+
+          ./kubectl delete secret nginx-ssl || true
           ./kubectl create secret generic nginx-ssl \
             --from-file /tmp/nginx.crt \
             --from-file /tmp/nginx.key
           
           ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:${GITHUB_SHA}
-          # ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:latest
           ./kustomize build . | kubectl apply -f -
+          
           ./kubectl rollout status deploy
           ./kubectl get po -owide
           ./kubectl get svc
@@ -405,13 +396,12 @@ jobs:
           
           ./kubectl config set-context --current --namespace $BACKEND_NAMESPACE
           
-          if ! ./kubectl get secret db-source-secret; then
-            ./kubectl delete secret db-source-secret
-          fi 
+          ./kubectl delete secret db-source-secret || true 
           ./kubectl create secret generic db-source-secret --from-literal='DB_SOURCE=${{ secrets.DB_SOURCE }}'
           
           ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA
           ./kustomize build . | kubectl apply -f -
+          
           ./kubectl rollout status deploy
           ./kubectl get po -owide
           ./kubectl get svc
