@@ -55,6 +55,8 @@ RUN pwd
 
 # 打包
 RUN pnpm build
+RUN ls
+RUN ls /src/dist
 
 # 运行清理工作
 #RUN rm -rf node_modules
