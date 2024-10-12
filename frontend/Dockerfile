@@ -71,7 +71,7 @@ COPY --from=builder /src/dist/ /etc/nginx/html/
 COPY --from=builder /src/dist/ /usr/share/nginx/html/
 
 # nginx.conf配置文件
-COPY deploy/application/overlays/production/nginx.conf /etc/nginx/conf.d/
+# COPY deploy/application/overlays/production/nginx.conf /etc/nginx/conf.d/
 
 # TODO: 剥离应用程序自带的ssl文件. 启用nginx SSL所需的文件
 # COPY deploy/application/overlays/production/ssl /etc/nginx/ssl/
