@@ -7,8 +7,6 @@ run-name: ${{ github.actor }} is learning GitHub Actions
 on:
   push:
     branches: [ "main", "beta" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
 
@@ -216,19 +214,17 @@ jobs:
               }
           }
           EOF
-          if ./kubectl get cm nginx-conf; then
+          if ! ./kubectl get cm nginx-conf; then
             ./kubectl delete cm nginx-conf
-          else
-            ./kubectl create cm nginx-conf --from-file=/tmp/nginx.conf
           fi
+          ./kubectl create cm nginx-conf --from-file=/tmp/nginx.conf
           
-          if ./kubectl get secret nginx-ssl; then
+          if ! ./kubectl get secret nginx-ssl; then
             ./kubectl delete secret nginx-ssl
-          else
-            ./kubectl create secret generic nginx-ssl \
+          fi
+          ./kubectl create secret generic nginx-ssl \
             --from-file /tmp/nginx.crt \
             --from-file /tmp/nginx.key
-          fi
           
           ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:${GITHUB_SHA}
           # ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:latest
@@ -404,7 +400,7 @@ jobs:
           
           ./kubectl config set-context --current --namespace $BACKEND_NAMESPACE
           
-          if ./kubectl get secret db-source-secret; then
+          if ! ./kubectl get secret db-source-secret; then
             ./kubectl delete secret db-source-secret
           fi 
           ./kubectl create secret generic db-source-secret --from-literal='DB_SOURCE=${{ secrets.DB_SOURCE }}'
