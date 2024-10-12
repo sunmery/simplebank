@@ -1,11 +1,9 @@
 # 工作流名称
-name: CI to Harbor and Deploy with ArgoCD
+name: Frontend CD Deploy
 # 工作流运行时显示名称
 run-name: ${{ github.actor }} is GitHub Actions
 on:
   push:
-    #    tags:
-    #      - 'v*'
     branches:
       - main
   pull_request:
@@ -13,10 +11,15 @@ on:
       - main
 
 jobs:
-  deploy:
+
+  build:
     # 将作业配置为在最新版本的Ubuntu Linux运行程序上运行,
     # 注意此处不是Docker Hub中的ubuntu:latest, 而是Github中自己的虚拟主机。
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: frontend
 
     steps:
       - uses: actions/checkout@v3
@@ -32,7 +35,10 @@ jobs:
         #run: npm install
       # 打包
       - name: Build Web
-        run: cd ./web; npm i -g pnpm; pnpm i; pnpm build
+        run: | 
+          npm i -g pnpm
+          pnpm i
+          pnpm build
 
       # 为node_modules设置缓存
       - name: Cache
@@ -62,42 +68,7 @@ jobs:
       #          # 上传到服务器目标目录
       #          TARGET: "/www/vuepress"
 
-      # 运行一段shell命令或者Shell脚本
-      - run: npm install -g bats
-      - run: bats -v
-      - run: |
-          #!/usr/bin/env bash
-          echo -e "Hello, Github Actions!\nAuthor: WeiyiGeek\nBlog: https://blog.weiyigeek.top" 
-          whoami && uname -a && ip addr
 
-      # Go
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: '1.22'
-
-      - name: Build project
-        run: |
-          ls
-          echo "go"
-          go build ./...
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-#      - name: Login to Harbor
-#        uses: docker/login-action@v1
-#        with:
-#          registry: ${{ secrets.HARBOR_ADDRESS }}
-#          username: ${{ secrets.HARBOR_USERNAME }}
-#          password: ${{ secrets.HARBOR_PASSWORD }}
-#
-#      - name: Build and push Docker image
-#        uses: docker/build-push-action@v2
-#        with:
-#          context: .
-#          file: ./Dockerfile
-#          push: true
-#          tags: ${{ secrets.HARBOR_ADDRESS }}/${{ github.repository }}:${{ github.ref_name }}
 
 #  deploy:
 #    needs: build-and-push

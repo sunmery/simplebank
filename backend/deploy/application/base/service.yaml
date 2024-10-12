@@ -6,8 +6,10 @@ spec:
   selector:
     app: simple-bank-api
   ports:
-    - protocol: TCP
-      port: 80
+    - name: tcp
+      port: 8080
+      nodePort: 30001
+      protocol: TCP
       targetPort: 8080
-  type: ClusterIP
-  
+  type: NodePort
+

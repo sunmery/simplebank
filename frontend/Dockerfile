@@ -1,17 +1,14 @@
+# syntax=docker/dockerfile:1
+# https://docs.docker.com/go/dockerfile-reference/\
 
-ARG NODE_VERSION=node:20.11.0-alpine
-ARG PACK_VERSION=latest
-ARG FRONTEND_PORT1=80
-ARG FRONTEND_PORT2=443
-ARG BUILD_DIR_NAME=dist
-
+ARG NODE_VERSION=node:22-alpine
 FROM $NODE_VERSION AS builder
+
+ARG PACK_VERSION=latest
+
 # FROM node:slim 仅包含运行 node 所需的最小包
 
-WORKDIR /web
-
-# 分离环境
-RUN cd /web
+WORKDIR /src
 
 # 默认使用生产环境
 # ENV NODE_ENV production
@@ -22,6 +19,9 @@ RUN cd /web
 # Alpine v3.19:
 # apk add --no-cache libc6-compat
 
+# proxy
+RUN npm config set registry https://registry.npmmirror.com
+
 # 缓存.npm依赖
 RUN --mount=type=cache,target=/root/.npm \
     npm install -g pnpm@$PACK_VERSION
@@ -31,7 +31,7 @@ RUN pnpm -v
 COPY package.json .
 
 # proxy
-# RUN pnpm config set registry https://registry.npmmirror.com
+RUN pnpm config set registry https://registry.npmmirror.com
 
 # 下载依赖作为一个单独的步骤，以利用Docker的缓存。
 # 利用缓存挂载到/root/.local/share/pnpm/store加速后续构建。
@@ -50,33 +50,39 @@ COPY . .
 
 RUN node -v
 RUN pnpm -v
-RUN ls /web
+RUN ls /src
 RUN pwd
-RUN cd ..
 
 # 打包
 RUN pnpm build
+RUN ls
+RUN ls /src/dist
 
 # 运行清理工作
 #RUN rm -rf node_modules
 
 # nginx QUIC + HTTP3 大小约为74.9MB
-FROM ghcr.io/macbre/nginx-http3
+FROM ghcr.io/macbre/nginx-http3:latest
+ARG HTTP_PORT=80
+ARG HTTPS_PORT=443
+
 # 使用nginx代理 web 项目的映射
 
 # 把上一步骤打包好的的 dist目录传递到 nginx 默认的 html 目录作为映射
-COPY --from=builder /web/dist/ /usr/share/nginx/html/
+COPY --from=builder /src/dist/ /etc/nginx/html/
+# COPY --from=builder /src/dist/ /usr/share/nginx/html/
 
-# 挂载 Nginx 的必要文件,
-# /etc/nginx/ssl/是 SSL 配置,不需要删掉即可
-# /var/log/nginx/ 是 nginx 日志,不需要删掉即可
-# /var/cache/nginx/是 nginx 缓存, 不需要删掉即可
-# /etc/nginx/conf/ 是 nginx 的配置文件目录, 必须保留
-# /usr/share/nginx/html/是 nginx 的 html 目录, 必须保留
-VOLUME ["/etc/nginx/html/","/etc/nginx/ssl/","/etc/nginx/conf.d/"]
+# nginx.conf配置文件
+# COPY deploy/application/overlays/production/nginx.conf /etc/nginx/conf.d/
 
-EXPOSE ${FRONTEND_PORT1}
-EXPOSE ${FRONTEND_PORT2}
+# TODO: 剥离应用程序自带的ssl文件. 启用nginx SSL所需的文件
+# COPY deploy/application/overlays/production/ssl /etc/nginx/ssl/
+
+# 或者引用远程的nginx.conf, 可以随时修改远程的配置文件
+# ADD https://example.com/nginx.conf
+
+EXPOSE ${HTTP_PORT}
+EXPOSE ${HTTPS_PORT}
 
 # 运行 nginx 服务
 CMD ["nginx", "-g", "daemon off;"]
@@ -87,18 +93,16 @@ CMD ["nginx", "-g", "daemon off;"]
 # -t: 标签, 例如: lisa/frontend:v2
 # frontend/ : 构建的目录, 相对于Dockerfile的路径, 与Docker相同的目录使用 . 表示当前目录
 # -f frontend/Dockerfile: 相对路径, 指定Dockerfile的路径
-# docker build --progress=plain --no-cache -t lisa/frontend:v2 frontend/ -f frontend/Dockerfile
+# docker build --progress=plain --no-cache -t lisa/frontend:v2.0.0 .
 
 # 运行示例
 # docker run -itd \
 # --name nginx-quic \
-# -v /home/nginx/html:/etc/nginx/html \
-# -v /home/nginx/conf:/etc/nginx/conf.d \
-# -v /home/nginx/ssl:/etc/nginx/ssl \
+# -v /home/docker/nginx/ssl:/etc/nginx/ssl \
 # -p '443:443/tcp' \
 # -p '443:443/udp' \
 # -p 80:80 \
-# ccr.ccs.tencentyun.com/lisa/frontend:v2
+# lisa/frontend:v2.0.0
 
-# docker tag lisa/frontend:v6.0.0 ccr.ccs.tencentyun.com/lisa/frontend:v6.0.0
-# docker push ccr.ccs.tencentyun.com/lisa/frontend:v6.0.0
+# docker tag lisa/frontend:v2.0.0 ccr.ccs.tencentyun.com/lisa/frontend:v2.0.0
+# docker push ccr.ccs.tencentyun.com/lisa/frontend:v2.0.0
