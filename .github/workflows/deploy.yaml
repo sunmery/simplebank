@@ -49,7 +49,10 @@ jobs:
           # 缓存文件目录的路径
           path: |
             **/node_modules
-          key: ${{runner.OS}}
+          #key: ${{runner.OS}}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       #      # 产物上传服务器
       #      - name: Upload to Deploy Server
@@ -159,6 +162,11 @@ jobs:
       # Deploy the Docker image to the TKE cluster
       - name: Deploy
         run: |
+          if ./kubectl get namespace ${NAMESPACE}; then
+            echo "namespaces ${NAMESPACE} already exists, skip create"
+          else
+            ./kubectl create namespace ${NAMESPACE}
+          fi
           ./kubectl config set-context --current --namespace $FRONTEND_NAMESPACE
           
           echo "${{secrets.SSL_CERTIFICATE}}" > /tmp/nginx.crt
@@ -312,6 +320,14 @@ jobs:
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - # 缓存依赖项
+        name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-modules-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-modules-
+
       - # 登录到容器注册表
         name: Login Cloud Registry
         run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login ${{ secrets.REGISTRY }} --username ${{ secrets.REGISTRY_USERNAME }} --password-stdin
@@ -380,13 +396,13 @@ jobs:
       # Deploy the Docker image to the TKE cluster
       - name: Deploy
         run: |
-          ./kubectl config set-context --current --namespace $BACKEND_NAMESPACE
-          
           if ./kubectl get namespace ${NAMESPACE}; then
             echo "namespaces ${NAMESPACE} already exists, skip create"
           else
             ./kubectl create namespace ${NAMESPACE}
           fi
+          
+          ./kubectl config set-context --current --namespace $BACKEND_NAMESPACE
           
           if ./kubectl get secret db-source-secret; then
             ./kubectl delete secret db-source-secret
