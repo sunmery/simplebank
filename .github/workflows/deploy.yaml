@@ -209,7 +209,7 @@ jobs:
           fi
           ./kubectl create cm nginx-conf --from-file=/tmp/nginx.conf
           
-          if /kubectl get secret nginx-ssl; then
+          if ./kubectl get secret nginx-ssl; then
             ./kubectl delete secret nginx-ssl
           fi
           ./kubectl create secret generic nginx-ssl \
@@ -379,7 +379,7 @@ jobs:
           fi
           if ./kubectl delete secret db-source-secret; then
             ./kubectl delete secret db-source-secret
-          fi
+          fi 
           ./kubectl create secret generic db-source-secret --from-literal='DB_SOURCE=${{ secrets.DB_SOURCE }}' --namespace=$NAMESPACE
           
           ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA
