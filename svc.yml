@@ -22,3 +22,4 @@ spec:
       targetPort: 4430
       nodePort: 30004
   type: NodePort
+

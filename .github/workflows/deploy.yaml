@@ -125,6 +125,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FRONTEND_NAMESPACE: bank
+      # 1024以下端口需要容器的特权(即root)权限才能执行, 运行特权权限容器有安全风险
+      # 建议使用1024以上端口, 再通过Ingress/Gateway或者LoadBalancer来映射为80/443端口
       HTTP_PORT: 8080
       HTTPS_PORT: 4430
     defaults:
