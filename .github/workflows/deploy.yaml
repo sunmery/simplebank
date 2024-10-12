@@ -35,12 +35,14 @@ jobs:
           version: latest
 
       - # 设置Node版本, 最低为20
-        name: Build frontend
+        name:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
           cache-dependency-path: '**/package-lock.json'
+
+      - name: Build frontend
         run: |
           #pnpm test
           pnpm build
