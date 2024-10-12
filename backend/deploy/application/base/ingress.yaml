@@ -20,4 +20,4 @@ spec:
   tls:
     - hosts:
         - api.lookeke.com
-      secretName: simple-bank-api-sect
+      secretName: simple-bank-api-cert

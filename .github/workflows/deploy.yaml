@@ -10,112 +10,92 @@ on:
 
 jobs:
 
-  # frontend-build-dist:
-  #   # 将作业配置为在最新版本的Ubuntu Linux运行程序上运行,
-  #   # 注意此处不是Docker Hub中的ubuntu:latest, 而是Github中自己的虚拟主机。
-  #   runs-on: ubuntu-latest
-  #   defaults:
-  #     run:
-  #       shell: bash
-  #       working-directory: frontend
-  #
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #
-  #     # 使用 actions 脚本，创建一个 node 运行环境并使用with参数指定了node版本为 14
-  #     - uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '20'
-  #         cache: 'npm'
-  #     # 打包
-  #     - name: Build Web
-  #       run: |
-  #         npm i -g pnpm
-  #         pnpm ci
-  #         pnpm build
-  #
-  #     # 为node_modules设置缓存
-  #     - name: Cache
-  #       # 缓存命中结果会存储在steps.[id].outputs.cache-hit里，该变量在继后的step中可读
-  #       id: cache-dependencies
-  #       uses: actions/cache@v3
-  #       with:
-  #         # 缓存文件目录的路径
-  #         path: |
-  #           **/node_modules
-  #         #key: ${{runner.OS}}
-  #         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-node-
-  #
-  #     #      # 产物上传服务器
-  #     #      - name: Upload to Deploy Server
-  #     #        uses: easingthemes/ssh-deploy@v2.0.7
-  #     #        env:
-  #     #          # 免密登录的秘钥
-  #     #          SSH_PRIVATE_KEY: ${{ secrets.D_PASS }}
-  #     #          # 服务器登录用户名
-  #     #          REMOTE_USER: ${{ secrets.D_USER }}
-  #     #          # 服务器的公网IP
-  #     #          REMOTE_HOST: ${{ secrets.D_HOST }}
-  #     #          # 你打包后产物的文件夹
-  #     #          SOURCE: "vuepress/"
-  #     #          # 先清空目标目录
-  #     #          ARGS: "-avzr --delete"
-  #     #          # 上传到服务器目标目录
-  #     #          TARGET: "/www/vuepress"
+  frontend-build-dist:
+    # 将作业配置为在最新版本的Ubuntu Linux运行程序上运行,
+    # 注意此处不是Docker Hub中的ubuntu:latest, 而是Github中自己的虚拟主机。
+    runs-on: ubuntu-latest
+    # 默认值配置
+    defaults:
+      # 运行在jobs中
+      run:
+        # 默认的shell解释器
+        shell: bash
+        # 默认的工作目录, 即使用该值作为job运行的根目录
+        working-directory: frontend
 
-  # frontend-build-image:
-  #   needs: frontend-build-dist
-  #   runs-on: ubuntu-latest
-  #   defaults:
-  #     run:
-  #       shell: bash
-  #       working-directory: frontend
-  #   steps:
-  #     - # 检出仓库中的代码，确保脚本可以访问仓库中的所有文件
-  #       name: Checkout repository
-  #       uses: actions/checkout@v4
-  #
-  #     - # 设置 QEMU 仿真器。允许你在 x86 架构的主机上构建和测试其他架构的 Docker 镜像
-  #       # https://github.com/docker/setup-qemu-action
-  #       name: Set up QEMU
-  #       uses: docker/setup-qemu-action@v3
-  #
-  #     - # Buildx 是 Docker 的一个插件，支持多平台构建
-  #       name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v3
-  #
-  #     - # 登录到容器注册表
-  #       name: Login Cloud Registry
-  #       run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login ${{ secrets.REGISTRY }} --username ${{ secrets.REGISTRY_USERNAME }} --password-stdin
-  #
-  #     - # 构建, 标记, 推送镜像到容器注册表
-  #       name: Build tag and push image to Cloud Registry
-  #       env:
-  #         VERSION: v2.0.0
-  #         NODE_VERSION: node:22-alpine3.19
-  #         PACK_VERSION: latest
-  #         HTTP_PORT: 30003
-  #         HTTPS_PORT: 30004
-  #
-  #       run: |
-  #         docker buildx build . \
-  #           --progress=plain \
-  #           -t actions/frontend \
-  #           --build-arg NODE_VERSION=$NODE_VERSION \
-  #           --build-arg PACK_VERSION=$PACK_VERSION \
-  #           --build-arg HTTP_PORT=$HTTP_PORT \
-  #           --build-arg HTTPS_PORT=$HTTPS_PORT \
-  #           --load
-  #
-  #         docker tag actions/frontend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:latest
-  #         docker tag actions/frontend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$VERSION
-  #         docker tag actions/frontend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$GITHUB_SHA
-  #
-  #         docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:latest
-  #         docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$VERSION
-  #         docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$GITHUB_SHA
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      -
+        # 自动下载pnpm
+        # 注意：pnpm 缓存支持需要 pnpm 版本 >= 6.10.0
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - # 设置Node版本, 最低为20
+        name: Build frontend
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: '**/package-lock.json'
+        run: |
+          #pnpm test
+          pnpm build
+
+  frontend-build-image:
+    needs: frontend-build-dist
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: frontend
+    steps:
+      - # 检出仓库中的代码，确保脚本可以访问仓库中的所有文件
+        name: Checkout repository
+        uses: actions/checkout@v4
+
+      - # 设置 QEMU 仿真器。允许你在 x86 架构的主机上构建和测试其他架构的 Docker 镜像
+        # https://github.com/docker/setup-qemu-action
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - # Buildx 是 Docker 的一个插件，支持多平台构建
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - # 登录到容器注册表
+        name: Login Cloud Registry
+        run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login ${{ secrets.REGISTRY }} --username ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+
+      - # 构建, 标记, 推送镜像到容器注册表
+        name: Build tag and push image to Cloud Registry
+        env:
+          VERSION: v2.0.0
+          NODE_VERSION: node:22-alpine3.19
+          PACK_VERSION: latest
+          HTTP_PORT: 30003
+          HTTPS_PORT: 30004
+
+        run: |
+          docker buildx build . \
+            --progress=plain \
+            -t actions/frontend \
+            --build-arg NODE_VERSION=$NODE_VERSION \
+            --build-arg PACK_VERSION=$PACK_VERSION \
+            --build-arg HTTP_PORT=$HTTP_PORT \
+            --build-arg HTTPS_PORT=$HTTPS_PORT \
+            --load
+
+          docker tag actions/frontend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:latest
+          docker tag actions/frontend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$VERSION
+          docker tag actions/frontend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$GITHUB_SHA
+
+          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:latest
+          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$VERSION
+          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$GITHUB_SHA
 
   frontend-deploy:
     # needs: frontend-build-image
@@ -151,11 +131,11 @@ jobs:
         run: |
           mkdir -pv ~/.kube/
           echo "${{secrets.KUBE_CONF}}" > ~/.kube/config
-          ./kubectl get ns
+          ./kubectl get all -n ${FRONTEND_NAMESPACE}
 
-      # Deploy the Docker image to the TKE cluster
       - name: Deploy
         run: |
+          # 创建命名空间并切换到该命名空间
           if ./kubectl get ns ${FRONTEND_NAMESPACE}; then
             echo "namespaces ${FRONTEND_NAMESPACE} already exists, skip create"
           else
@@ -163,6 +143,8 @@ jobs:
           fi
           ./kubectl config set-context --current --namespace $FRONTEND_NAMESPACE
           
+          # 将nginx的配置文件上传到configmap, 然后Pod引用
+          # 将SSL文件(crt/key)上传到secret, 然后Pod引用
           echo "${{secrets.SSL_CERTIFICATE}}" > /tmp/nginx.crt
           echo "${{secrets.SSL_PRIVATE_KEY}}" > /tmp/nginx.key
           cat <<EOF > /tmp/nginx.conf

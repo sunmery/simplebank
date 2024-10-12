@@ -17,8 +17,8 @@ spec:
       protocol: TCP
       nodePort: 30004
     - name: quic
-      port: 4430
-      targetPort: 4430
+      port: 4431
+      targetPort: 4431
       protocol: UDP
       nodePort: 30005
   type: NodePort

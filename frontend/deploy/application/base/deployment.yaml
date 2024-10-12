@@ -27,6 +27,6 @@ spec:
               containerPort: 4430
               protocol: TCP
             - name: quic
-              containerPort: 4430
+              containerPort: 4431
               protocol: UDP
       restartPolicy: Always
