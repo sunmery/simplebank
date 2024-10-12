@@ -69,6 +69,7 @@ jobs:
       #          TARGET: "/www/vuepress"
 
   frontend-build-image:
+    needs: frontend-build-dist
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -119,10 +120,8 @@ jobs:
           docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$VERSION
           docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$GITHUB_SHA
 
-
-
-
   frontend-deploy:
+    needs: frontend-build-image
     runs-on: ubuntu-latest
     env:
       NAMESPACE: bank
@@ -204,16 +203,13 @@ jobs:
               }
           }
           EOF
-          if ! ./kubectl get cm nginx-conf; then
-            echo "configmap nginx-conf not found, skipping deletion."
-          else
+          cat /tmp/nginx.conf
+          if ./kubectl get cm nginx-conf; then
             ./kubectl delete cm nginx-conf
           fi
-          ./kubectl create configmap nginx-conf --from-file=/tmp/nginx.conf
+          ./kubectl create cm nginx-conf --from-file=/tmp/nginx.conf
           
-          if ! ./kubectl get secret nginx-ssl; then
-            echo "secret nginx-ssl not found, skipping deletion."
-          else
+          if /kubectl get secret nginx-ssl; then
             ./kubectl delete secret nginx-ssl
           fi
           ./kubectl create secret generic nginx-ssl \
@@ -225,8 +221,6 @@ jobs:
           ./kubectl rollout status deploy
           ./kubectl get po -owide
           ./kubectl get svc
-
-
 
   backend-test:
     runs-on: ubuntu-latest
@@ -380,16 +374,14 @@ jobs:
       # Deploy the Docker image to the TKE cluster
       - name: Deploy
         run: |
-          ./kubectl get namespace ${NAMESPACE} &> /dev/null
-          if [ $? -eq 0 ]; then
-            echo "Namespace ${NAMESPACE} already exists."
-          else
+          if ./kubectl get namespace ${NAMESPACE}; then
             ./kubectl create ns $NAMESPACE
           fi
-          if ! ./kubectl delete secret db-source-secret; then
-            echo "Secret db-source-secret not found, skipping deletion."
+          if ./kubectl delete secret db-source-secret; then
+            ./kubectl delete secret db-source-secret
           fi
           ./kubectl create secret generic db-source-secret --from-literal='DB_SOURCE=${{ secrets.DB_SOURCE }}' --namespace=$NAMESPACE
+          
           ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA
           ./kustomize build . | kubectl apply -f -
           ./kubectl rollout status deploy
