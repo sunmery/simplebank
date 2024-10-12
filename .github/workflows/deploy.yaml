@@ -258,10 +258,17 @@ jobs:
         name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      -
+        # 设置Go版本和缓存机制
+        # https://github.com/actions/setup-go#caching-dependency-files-and-build-outputs
+        name: Set up Go
+        uses: actions/setup-go@v5
         with:
           go-version: '1.23'
+          # 检查是否最新版
+          check-latest: true
+          # 检查项目中所有的go.sum, 对于单体和多服务的应用都生效
+          cache-dependency-path: '**/go.sum'
 
   #      - name: Install migrate
   #        run: |
