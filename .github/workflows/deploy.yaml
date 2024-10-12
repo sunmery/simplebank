@@ -31,8 +31,8 @@ jobs:
         # 安装依赖
         #- name: Installing Dependencies
         # 如果命中缓存，就不需要安装依赖，使用缓存即可
-        #if: steps.cache-dependencies.outputs.cache-hit != 'true'
-        #run: npm install
+        # if: steps.cache-dependencies.outputs.cache-hit != 'true'
+        # run: npm install
       # 打包
       - name: Build Web
         run: |
@@ -120,6 +120,8 @@ jobs:
           docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$GITHUB_SHA
 
 
+
+
   frontend-deploy:
     runs-on: ubuntu-latest
     env:
@@ -127,7 +129,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: frontend
+        working-directory: frontend/deploy/application/overlays/production
     steps:
       - # 检出仓库中的代码，确保脚本可以访问仓库中的所有文件
         name: Checkout repository
@@ -202,10 +204,10 @@ jobs:
               }
           }
           EOF
-          if ! ./kubectl get configmap nginx-conf; then
+          if ! ./kubectl get cm nginx-conf; then
             echo "configmap nginx-conf not found, skipping deletion."
           else
-            ./kubectl delete configmap nginx-conf
+            ./kubectl delete cm nginx-conf
           fi
           ./kubectl create configmap nginx-conf --from-file=/tmp/nginx.conf
           
@@ -224,7 +226,9 @@ jobs:
           ./kubectl get po -owide
           ./kubectl get svc
 
-  test:
+
+
+  backend-test:
     runs-on: ubuntu-latest
     env:
       GIN_MODE: release
@@ -279,7 +283,7 @@ jobs:
   #        run: |
   #          make test
 
-  build:
+  backend-build:
     needs: test
     name: Build image
     runs-on: ubuntu-latest
@@ -294,29 +298,24 @@ jobs:
         shell: bash
         working-directory: backend
     steps:
-      -
-        # 检出仓库中的代码，确保脚本可以访问仓库中的所有文件
+      - # 检出仓库中的代码，确保脚本可以访问仓库中的所有文件
         name: Checkout repository
         uses: actions/checkout@v4
 
-      -
-        # 设置 QEMU 仿真器。允许你在 x86 架构的主机上构建和测试其他架构的 Docker 镜像
+      - # 设置 QEMU 仿真器。允许你在 x86 架构的主机上构建和测试其他架构的 Docker 镜像
         # https://github.com/docker/setup-qemu-action
         name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      -
-        # Buildx 是 Docker 的一个插件，支持多平台构建
+      - # Buildx 是 Docker 的一个插件，支持多平台构建
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      -
-        # 登录到容器注册表
+      - # 登录到容器注册表
         name: Login Cloud Registry
         run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login ${{ secrets.REGISTRY }} --username ${{ secrets.REGISTRY_USERNAME }} --password-stdin
 
-      -
-        # 构建, 标记, 推送镜像到容器注册表
+      - # 构建, 标记, 推送镜像到容器注册表
         name: Build tag and push image to Cloud Registry
         env:
           VERSION: v2.0.0
@@ -346,7 +345,8 @@ jobs:
           docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA
 
 
-  deploy:
+
+  backend-deploy:
     needs: build
     env:
       DEPLOYMENT_NAME: simple-bank-api
