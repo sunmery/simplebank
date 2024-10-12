@@ -161,12 +161,12 @@ jobs:
           cat <<EOF > /tmp/nginx.conf
           server {
               listen 80;
-              server_name ${DOMAIN}; # server_name
-              return 301 https://${DOMAIN}; # website
+              server_name ${{secrets.DOMAIN}}; # server_name
+              return 301 https://${{secrets.DOMAIN}}; # website
           }
 
           server {
-              server_name ${DOMAIN} www.${DOMAIN};  # 服务器名称
+              server_name ${{secrets.DOMAIN}} www.${{secrets.DOMAIN}};  # 服务器名称
 
               # UDP listener for QUIC+HTTP/3
               # http/3
@@ -380,7 +380,7 @@ jobs:
             ./kubectl create namespace ${NAMESPACE}
           fi
           
-          if ./kubectl delete secret db-source-secret; then
+          if ./kubectl get secret db-source-secret; then
             ./kubectl delete secret db-source-secret
           fi 
           ./kubectl create secret generic db-source-secret --from-literal='DB_SOURCE=${{ secrets.DB_SOURCE }}'
