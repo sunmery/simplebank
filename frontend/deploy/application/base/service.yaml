@@ -6,10 +6,16 @@ spec:
   selector:
     app: simple-bank-web
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
       targetPort: 30003
-    - protocol: TCP
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 30004
+    - name: quic
+      protocol: UDP
       port: 443
       targetPort: 30004
   type: NodePort

@@ -20,10 +20,13 @@ spec:
           image: example
           imagePullPolicy: Always
           ports:
-            - containerPort: 443
+            - name: http
+              containerPort: 80
               protocol: TCP
-      volumes:
-        - name: nginx-conf-volume
-
+            - name: http3
+              containerPort: 443
+              protocol: TCP
+            - name: quic
+              containerPort: 443
+              protocol: UDP
       restartPolicy: Always
-

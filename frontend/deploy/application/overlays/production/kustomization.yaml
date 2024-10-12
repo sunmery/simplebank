@@ -14,7 +14,7 @@ namePrefix: prod-
 patches:
 - path: replica_count.yaml
 - path: limits.yaml
-- path: add-env.yaml
+
 images:
 - name: example
   newName: ccr.ccs.tencentyun.com/lisa/frontend
