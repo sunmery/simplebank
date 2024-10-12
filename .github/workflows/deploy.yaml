@@ -27,13 +27,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      -
-        # 自动下载pnpm
-        # 注意：pnpm 缓存支持需要 pnpm 版本 >= 6.10.0
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
-
       - # 设置Node版本, 最低为20
         name:
         uses: actions/setup-node@v4
@@ -43,6 +36,11 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
 
       - name: Build frontend
+        # 自动下载pnpm
+        # 注意：pnpm 缓存支持需要 pnpm 版本 >= 6.10.0
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
         run: |
           #pnpm test
           pnpm build
@@ -100,7 +98,7 @@ jobs:
           docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$GITHUB_SHA
 
   frontend-deploy:
-    # needs: frontend-build-image
+    needs: frontend-build-image
     runs-on: ubuntu-latest
     env:
       FRONTEND_NAMESPACE: bank
