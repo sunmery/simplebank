@@ -162,10 +162,10 @@ jobs:
       # Deploy the Docker image to the TKE cluster
       - name: Deploy
         run: |
-          if ./kubectl get namespace ${NAMESPACE}; then
-            echo "namespaces ${NAMESPACE} already exists, skip create"
+          if ./kubectl get ns ${FRONTEND_NAMESPACE}; then
+            echo "namespaces ${FRONTEND_NAMESPACE} already exists, skip create"
           else
-            ./kubectl create namespace ${NAMESPACE}
+            ./kubectl create ns ${FRONTEND_NAMESPACE}
           fi
           ./kubectl config set-context --current --namespace $FRONTEND_NAMESPACE
           
@@ -396,10 +396,10 @@ jobs:
       # Deploy the Docker image to the TKE cluster
       - name: Deploy
         run: |
-          if ./kubectl get namespace ${NAMESPACE}; then
-            echo "namespaces ${NAMESPACE} already exists, skip create"
+          if ./kubectl get ns ${BACKEND_NAMESPACE}; then
+            echo "namespaces ${BACKEND_NAMESPACE} already exists, skip create"
           else
-            ./kubectl create namespace ${NAMESPACE}
+            ./kubectl create ns ${BACKEND_NAMESPACE}
           fi
           
           ./kubectl config set-context --current --namespace $BACKEND_NAMESPACE
