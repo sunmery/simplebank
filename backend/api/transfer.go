@@ -39,7 +39,7 @@ func (s *Server) createTransfer(ctx *gin.Context) {
 	// 不一致抛出异常
 	payload := ctx.MustGet(constants.AuthorizationPayloadKey).(*token.Payload)
 	if fromAccount.Owner != payload.Username {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": errorResponse(errors.New("登录的用户非该账户的拥有者"))})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": errorResponse(errors.New("登录的用户非该账户的拥有者"))})
 		return
 	}
 

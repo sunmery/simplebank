@@ -6,6 +6,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
@@ -28,6 +30,12 @@ type Querier interface {
 	//  VALUES ($1, $2)
 	//  RETURNING id, account_id, amount, created_at
 	CreateEntry(ctx context.Context, arg CreateEntryParams) (Entries, error)
+	//CreateSessions
+	//
+	//  INSERT INTO sessions(id,username, refresh_token, user_agent, client_ip, is_blocked, expires_at)
+	//  VALUES ($1,$2,$3,$4,$5,$6,$7)
+	//  RETURNING id, username, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at
+	CreateSessions(ctx context.Context, arg CreateSessionsParams) (Sessions, error)
 	//CreateTransfer
 	//
 	//  INSERT INTO transfers(from_account_id, to_account_id, amount)
@@ -36,10 +44,7 @@ type Querier interface {
 	CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfers, error)
 	//CreateUser
 	//
-	//  INSERT INTO users (username,
-	//                     full_name,
-	//                     hashed_password,
-	//                     email)
+	//  INSERT INTO users (username, full_name, hashed_password, email)
 	//  VALUES ($1, $2, $3, $4)
 	//  RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at
 	CreateUser(ctx context.Context, arg CreateUserParams) (Users, error)
@@ -70,6 +75,13 @@ type Querier interface {
 	//  WHERE id = $1
 	//  LIMIT 1
 	GetEntry(ctx context.Context, id int64) (Entries, error)
+	//GetSessions
+	//
+	//  SELECT id, username, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at
+	//  FROM sessions
+	//  WHERE id = $1
+	//  LIMIT 1
+	GetSessions(ctx context.Context, id uuid.UUID) (Sessions, error)
 	//GetTransfer
 	//
 	//  SELECT id, from_account_id, to_account_id, amount, created_at

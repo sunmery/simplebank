@@ -8,10 +8,12 @@ import (
 )
 
 type Config struct {
-	DBSource            string        `mapstructure:"DB_SOURCE"`
-	ServerAddress       string        `mapstructure:"SEVER_ADDRESS"`
-	TokenSymmetricKey   string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
-	AccessTokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	DBSource             string        `mapstructure:"DB_SOURCE"`
+	HTTPServerAddress    string        `mapstructure:"HTTP_SEVER_ADDRESS"`
+	GRPCServerAddress    string        `mapstructure:"GRPC_SEVER_ADDRESS"`
+	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
+	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	RefreshTokenDuration string        `mapstructure:"REFRESH_TOKEN_DURATION"`
 }
 
 func LoadConfig(path string) (cfg *Config, err error) {

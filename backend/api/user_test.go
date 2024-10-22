@@ -7,9 +7,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
-	"testing"
-
 	"simple_bank/pkg"
+	"testing"
 
 	db "simple_bank/db/sqlc"
 
@@ -327,4 +326,61 @@ func randomUser(t *testing.T) (user db.Users, password string) {
 		Email:          pkg.RandomEmail(5),
 	}
 	return
+}
+
+func TestLoginUserAPI(t *testing.T) {
+	user, password := randomUser(t)
+	require.NotEmpty(t, password)
+	require.NotEmpty(t, user)
+
+	testCases := []struct {
+		name          string
+		body          gin.H
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			body: gin.H{
+				"username": user.Username,
+				"password": password,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetUser(gomock.Any(), gomock.Eq(user.Username)).
+					Times(1).
+					Return(user, nil)
+				store.EXPECT().
+					CreateSessions(gomock.Any(), gomock.Any()).
+					Times(1)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
+
+			body, err := json.Marshal(tc.body)
+			require.NoError(t, err)
+			data := bytes.NewReader(body)
+
+			url := "/users/login"
+			request, readErr := http.NewRequest(http.MethodPost, url, data)
+			require.NoError(t, readErr)
+
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(recorder)
+		})
+	}
 }

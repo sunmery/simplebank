@@ -23,7 +23,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestAccountAPI(t *testing.T) {
+func TestGetAccountAPI(t *testing.T) {
 	username := pkg.RandomString(5)
 	// mock random account
 	account := randomAccount(t, username)
@@ -70,7 +70,7 @@ func TestAccountAPI(t *testing.T) {
 					Return(account, nil)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+				require.Equal(t, http.StatusForbidden, recorder.Code)
 			},
 		}, {
 			name:      "未授权",
@@ -88,14 +88,14 @@ func TestAccountAPI(t *testing.T) {
 		},
 		{
 			name:      "NotFoundID",
-			accountID: int64(-1),
+			accountID: int64(100),
 			setupAuth: func(t *testing.T, req *http.Request, tokenMaker token.Maker) {
 				addMiddleware(t, req, constants.AuthorizationHeaderType, tokenMaker, username, time.Minute)
 			},
 
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
-					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
+					GetAccount(gomock.Any(), gomock.Eq(int64(100))).
 					Times(1).
 					Return(db.Accounts{}, sql.ErrNoRows)
 			},
@@ -120,6 +120,7 @@ func TestAccountAPI(t *testing.T) {
 
 			// test api
 			url := fmt.Sprintf("/accounts/%d", tc.accountID)
+			// url := fmt.Sprintf("/accounts/page_id=%d&page_size=5", tc.accountID)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
@@ -130,10 +131,10 @@ func TestAccountAPI(t *testing.T) {
 	}
 }
 
-func randomAccount(t *testing.T, username string) db.Accounts {
+func randomAccount(t *testing.T, owner string) db.Accounts {
 	account := db.Accounts{
 		ID:       pkg.RandomInt(1, 10),
-		Owner:    username,
+		Owner:    owner,
 		Balance:  pkg.RandomInt(1, 100),
 		Currency: pkg.RandomCurrency(),
 	}
