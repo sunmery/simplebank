@@ -14,7 +14,7 @@ services:
       - DB_SOURCE="postgresql://postgres:postgres@159.75.231.54:5432/simple_bank?sslmode=disable"
     # 端口, 对应你的服务的端口
     ports:
-      - "0.0.0.0:8080:8080"
+      - "0.0.0.0:30001:30001"
     volumes:
       - ./app.env:/bin/app.env
     command:
