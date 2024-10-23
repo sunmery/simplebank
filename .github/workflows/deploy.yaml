@@ -410,7 +410,7 @@ jobs:
   openapi-swagger:
     needs: backend-test
     env:
-      DEPLOYMENT_NAME: simple-bank-api
+      VERSION: v2.0.0
     runs-on: ubuntu-latest
     defaults:
       run:
