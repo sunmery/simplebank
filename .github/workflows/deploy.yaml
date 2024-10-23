@@ -226,7 +226,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GIN_MODE: release
-      DB_SOURCE: "postgresql://postgres:postgres@postgres17:5432/simple_bank?sslmode=disable"
+      DB_SOURCE: "postgresql://postgres:postgres@localhost:5432/simple_bank?sslmode=disable"
     defaults:
       run:
         shell: bash
