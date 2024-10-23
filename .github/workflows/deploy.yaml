@@ -407,7 +407,7 @@ jobs:
           ./kubectl get po -owide
           ./kubectl get svc
 
-  openapi-swagger:
+  swagger-build:
     needs: backend-test
     env:
       VERSION: v2.0.0
@@ -416,6 +416,31 @@ jobs:
       run:
         shell: bash
         working-directory: backend
+    steps:
+      - # 检出仓库中的代码，确保脚本可以访问仓库中的所有文件
+        name: Checkout repository
+        uses: actions/checkout@v4
+
+      - # 登录到容器注册表
+        name: Login Cloud Registry
+        run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login ${{ secrets.REGISTRY }} --username ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+
+      - # 打包swagger静态文件为镜像
+        name: Build swagger image
+        run: |
+          docker build . --progress=plain -t actions/swagger -f swagger-Dockerfile
+          docker tag actions/swagger ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_SWAGGER_REPOSITORY }}:$VERSION
+          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_SWAGGER_REPOSITORY }}:$VERSION
+
+  swagger-deploy:
+    needs: swagger-build
+    env:
+      VERSION: v2.0.0
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend/manifests/swagger/overlays/production
     steps:
       - # 检出仓库中的代码，确保脚本可以访问仓库中的所有文件
         name: Checkout repository
@@ -437,17 +462,11 @@ jobs:
         run: |
           mkdir -pv ~/.kube/
           echo "${{secrets.KUBE_CONF}}" > ~/.kube/config
-
-      - # 登录到容器注册表
-        name: Login Cloud Registry
-        run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login ${{ secrets.REGISTRY }} --username ${{ secrets.REGISTRY_USERNAME }} --password-stdin
-
-      - # 打包swagger静态文件为镜像
-        name: Build swagger image
+      - name: Set up Kustomize
         run: |
-          docker build . --progress=plain -t actions/swagger -f swagger-Dockerfile
-          docker tag actions/swagger ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_SWAGGER_REPOSITORY }}:$VERSION
-          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_SWAGGER_REPOSITORY }}:$VERSION
+          curl -o kustomize --location https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
+          chmod u+x ./kustomize
+          ./kustomize version
 
       - # 部署到Kubernetes环境
         name: Deploy static api docs site
