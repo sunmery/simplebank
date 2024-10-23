@@ -54,7 +54,7 @@ evans:
 	evans -r repl --host localhost -p 30002
 
 # API文档
-openapiv2:
+swagger:
 	rm -rf doc/swagger/*.go
 	protoc -I=proto \
 	--openapiv2_out=doc/swagger \
@@ -62,4 +62,4 @@ openapiv2:
 	--openapiv2_opt=openapi_naming_strategy=fqn \
 	proto/*.proto
 
-.PHONY: sqlc pg-up pg-down migrate-up migrate-up1 migrate-down migrate-down1 test server mock proto evans openapiv2
+.PHONY: sqlc pg-up pg-down migrate-up migrate-up1 migrate-down migrate-down1 test server mock proto evans swagger

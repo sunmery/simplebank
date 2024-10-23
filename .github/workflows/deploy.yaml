@@ -215,7 +215,7 @@ jobs:
             --from-file /tmp/nginx.crt \
             --from-file /tmp/nginx.key
           
-          ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:${GITHUB_SHA}
+          ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:${VERSION}
           ./kustomize build . | kubectl apply -f -
           
           ./kubectl rollout status deploy
@@ -400,9 +400,61 @@ jobs:
           ./kubectl delete secret db-source-secret || true 
           ./kubectl create secret generic db-source-secret --from-literal='DB_SOURCE=${{ secrets.DB_SOURCE }}'
           
-          ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA
+          ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:${VERSION}
           ./kustomize build . | kubectl apply -f -
           
+          ./kubectl rollout status deploy
+          ./kubectl get po -owide
+          ./kubectl get svc
+
+  openapi-swagger:
+    needs: backend-test
+    env:
+      DEPLOYMENT_NAME: simple-bank-api
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend
+    steps:
+      - # 检出仓库中的代码，确保脚本可以访问仓库中的所有文件
+        name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Kustomize
+        run: |
+          curl -o kustomize --location https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
+          chmod u+x ./kustomize
+          ./kustomize version
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl{,.sha256}"
+          echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
+          chmod +x ./kubectl
+
+      - name: Connect Kubernetes Cluster
+        run: |
+          mkdir -pv ~/.kube/
+          echo "${{secrets.KUBE_CONF}}" > ~/.kube/config
+      -
+        #
+        name: Generate openapi v2 swagger json
+        run: |
+          make swagger
+
+      - name: Build swagger image
+        run: |
+          docker build . --progress=plain -t actions/swagger -f swagger-Dockerfile
+          docker tag actions/swagger ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_SWAGGER_REPOSITORY }}:$VERSION
+          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_API_REPOSITORY }}:$VERSION
+
+      - # 部署到Kubernetes环境
+        name: Deploy static api docs site
+        run: |
+          ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_SWAGGER_REPOSITORY }}:${VERSION}
+          ./kustomize build . | kubectl apply -f -
+
           ./kubectl rollout status deploy
           ./kubectl get po -owide
           ./kubectl get svc
