@@ -100,12 +100,12 @@ jobs:
             --build-arg HTTPS_PORT=$HTTPS_PORT \
             --load
 
-          docker tag actions/frontend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:latest
-          # docker tag actions/frontend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$VERSION
+          docker tag actions/frontend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$VERSION
+          # docker tag actions/frontend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:latest
           # docker tag actions/frontend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$GITHUB_SHA
 
-          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:latest
-          # docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$VERSION
+          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$VERSION
+          # docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:latest
           # docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$GITHUB_SHA
 
   frontend-deploy:
@@ -350,8 +350,8 @@ jobs:
           # docker tag actions/backend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:latest
           # docker tag actions/backend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA
           
-          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:latest
-          # docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$VERSION
+          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$VERSION
+          # docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:latest
           # docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA
 
   backend-deploy:
