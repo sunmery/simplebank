@@ -278,7 +278,7 @@ jobs:
 
       - name: Run database migrate
         run: |
-          DB_SOURCE="postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+          # export DB_SOURCE="postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
           make migrate-up
 
       - name: Test
