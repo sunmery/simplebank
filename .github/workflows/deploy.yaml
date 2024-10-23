@@ -226,7 +226,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GIN_MODE: release
-      DB_SOURCE: "postgresql://postgres:postgres@localhost:5432/simple_bank?sslmode=disable"
     defaults:
       run:
         shell: bash
@@ -279,6 +278,7 @@ jobs:
 
       - name: Run database migrate
         run: |
+          DB_SOURCE="postgresql://${{secrets.POSTGRES_USER}}:${{secrets.POSTGRES_PASSWORD}}@localhost:5432/${{secrets.POSTGRES_DB}}?sslmode=disable"
           make migrate-up
 
       - name: Test
@@ -346,7 +346,7 @@ jobs:
             --platform $GOOS/$GOARCH \
             --load
           
-          # docker tag actions/backend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$VERSION
+          docker tag actions/backend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$VERSION
           # docker tag actions/backend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:latest
           # docker tag actions/backend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$GITHUB_SHA
           
