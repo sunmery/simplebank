@@ -438,6 +438,10 @@ jobs:
           mkdir -pv ~/.kube/
           echo "${{secrets.KUBE_CONF}}" > ~/.kube/config
 
+      - # 登录到容器注册表
+        name: Login Cloud Registry
+        run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login ${{ secrets.REGISTRY }} --username ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+
       - name: Build swagger image
         run: |
           docker build . --progress=plain -t actions/swagger -f swagger-Dockerfile
