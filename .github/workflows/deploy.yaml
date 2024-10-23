@@ -239,11 +239,11 @@ jobs:
         # Provide the password for postgres
         env:
           # 数据库用户名
-          POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+          POSTGRES_USER: postgres
           # 数据库用户密码
-          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+          POSTGRES_PASSWORD: postgres
           # 此可选环境变量可用于为首次启动映像时创建的默认数据库定义不同的名称。如果未指定，则将使用 POSTGRES_USER 的值。
-          POSTGRES_DB: ${{secrets.POSTGRES_DB}}
+          POSTGRES_DB: postgres
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
@@ -278,7 +278,7 @@ jobs:
 
       - name: Run database migrate
         run: |
-          DB_SOURCE="postgresql://${{secrets.POSTGRES_USER}}:${{secrets.POSTGRES_PASSWORD}}@localhost:5432/${{secrets.POSTGRES_DB}}?sslmode=disable"
+          DB_SOURCE="postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
           make migrate-up
 
       - name: Test
