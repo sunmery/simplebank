@@ -4,8 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-#    image: ccr.ccs.tencentyun.com/lisa/backend:v2.0.0
-    image: lisa/backend:v2.0.0
+    image: ccr.ccs.tencentyun.com/lisa/backend:v2.0.0
     # 把<appname> 替换为go mod xxx生成的名称, 也就是go build 之后的应用名称, 例如backend
     container_name: simple-bank
     # 重启策略, 遇到错误就停止

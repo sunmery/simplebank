@@ -270,19 +270,19 @@ jobs:
           # 检查项目中所有的go.sum, 对于单体和多服务的应用都生效
           cache-dependency-path: '**/go.sum'
 
-  #      - name: Install migrate
-  #        run: |
-  #          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.18.1/migrate.linux-amd64.tar.gz | tar xvz
-  #          sudo mv migrate /usr/bin/
-  #          which migrate
+      - name: Install migrate
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.18.1/migrate.linux-amd64.tar.gz | tar xvz
+          sudo mv migrate /usr/bin/
+          which migrate
 
-  #      - name: Run database migrate
-  #        run: |
-  #          make migrate-up
+      - name: Run database migrate
+        run: |
+          make migrate-up
 
-  #      - name: Test
-  #        run: |
-  #          make test
+      - name: Test
+        run: |
+          make test
 
   backend-build:
     needs: backend-test
