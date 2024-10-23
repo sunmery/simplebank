@@ -442,7 +442,7 @@ jobs:
         run: |
           docker build . --progress=plain -t actions/swagger -f swagger-Dockerfile
           docker tag actions/swagger ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_SWAGGER_REPOSITORY }}:$VERSION
-          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_API_REPOSITORY }}:$VERSION
+          docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_SWAGGER_REPOSITORY }}:$VERSION
 
       - # 部署到Kubernetes环境
         name: Deploy static api docs site
