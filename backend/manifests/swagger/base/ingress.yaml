@@ -14,7 +14,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: swagger-simple-bank-api
+                name: swagger-simple-bank-service
                 port:
                   number: 80
   tls:

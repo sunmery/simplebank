@@ -7,4 +7,3 @@ namePrefix: dev-
 
 patches:
   - path: replica_count.yaml
-  - path: add-env.yaml
