@@ -226,6 +226,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GIN_MODE: release
+      DB_SOURCE: "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
     defaults:
       run:
         shell: bash
@@ -278,7 +279,6 @@ jobs:
 
       - name: Run database migrate
         run: |
-          # export DB_SOURCE="postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
           make migrate-up
 
       - name: Test
