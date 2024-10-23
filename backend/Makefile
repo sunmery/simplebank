@@ -44,13 +44,22 @@ mock:
 proto:
 	rm -rf pb/*.go
 	protoc -I=proto \
-    --go_out=pb --go_opt=paths=source_relative \
-    --go-grpc_out=pb --go-grpc_opt=paths=source_relative \
-    --grpc-gateway_out=pb --grpc-gateway_opt=paths=source_relative \
-    proto/*.proto
+	--go_out=pb --go_opt=paths=source_relative \
+	--go-grpc_out=pb --go-grpc_opt=paths=source_relative \
+	--grpc-gateway_out=pb --grpc-gateway_opt=paths=source_relative \
+	proto/*.proto
 
 # grpc的命令行测试工具
 evans:
 	evans -r repl --host localhost -p 30002
 
-.PHONY: sqlc pg-up pg-down migrate-up migrate-up1 migrate-down migrate-down1 test server mock proto evans
+# API文档
+openapiv2:
+	rm -rf doc/swagger/*.go
+	protoc -I=proto \
+	--openapiv2_out=doc/swagger \
+	--openapiv2_opt=allow_merge=true,merge_file_name=simple_bank \
+	--openapiv2_opt=openapi_naming_strategy=fqn \
+	proto/*.proto
+
+.PHONY: sqlc pg-up pg-down migrate-up migrate-up1 migrate-down migrate-down1 test server mock proto evans openapiv2

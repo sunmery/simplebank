@@ -90,7 +90,7 @@ func local_request_CreateUserService_LoginUser_0(ctx context.Context, marshaler 
 // GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
 func RegisterCreateUserServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server CreateUserServiceServer) error {
 
-	mux.Handle("POST", pattern_CreateUserService_CreateUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_CreateUserService_CreateUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -181,7 +181,7 @@ func RegisterCreateUserServiceHandler(ctx context.Context, mux *runtime.ServeMux
 // "CreateUserServiceClient" to call the correct interceptors. This client ignores the HTTP middlewares.
 func RegisterCreateUserServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client CreateUserServiceClient) error {
 
-	mux.Handle("POST", pattern_CreateUserService_CreateUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_CreateUserService_CreateUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"github.com/jackc/pgx/v5/pgconn"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -79,13 +78,13 @@ func (s *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.L
 		return nil, status.Errorf(codes.Internal, "刷新令牌颁发失败, 内部错误: %s", err)
 	}
 
-	fmt.Println("refreshPayload.ExpiresAt.Time", refreshPayload.ExpiresAt.Time)
+	mtdt := s.extractMetadata(ctx)
 	sessions, err := s.store.CreateSessions(ctx, db.CreateSessionsParams{
 		ID:           refreshPayload.ID,
 		Username:     user.Username,
 		RefreshToken: refreshToken,
-		UserAgent:    "",
-		ClientIp:     "",
+		UserAgent:    mtdt.UserAgent,
+		ClientIp:     mtdt.ClientIP,
 		IsBlocked:    false,
 	})
 	if err != nil {

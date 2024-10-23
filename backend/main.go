@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	gwruntime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/encoding/protojson"
 	"log"
 	"net"
+	"net/http"
 	"simple_bank/gapi"
 	"simple_bank/pb"
 
@@ -32,6 +34,7 @@ func main() {
 
 	store := db.NewStore(conn)
 
+	go runGatewayServer(cfg, store)
 	runGrpcServer(cfg, store)
 }
 
@@ -64,7 +67,7 @@ func runGrpcServer(cfg *config.Config, store db.Store) {
 
 }
 
-// Gateway服务. 接收HTTP与GRPC请求
+// Gateway服务. 编写grpc服务, 可以接收客户端的HTTP请求. 在进程内翻译grpc为http的响应并返回
 func runGatewayServer(cfg *config.Config, store db.Store) {
 	// rpc服务
 	server, err := gapi.NewServer(cfg, store)
@@ -73,7 +76,15 @@ func runGatewayServer(cfg *config.Config, store db.Store) {
 	}
 
 	// 进程内翻译, 仅支持 一元rpc, 即单个请求与单个响应
-	grpcMux := runtime.NewServeMux()
+	jsonOption := gwruntime.WithMarshalerOption(gwruntime.MIMEWildcard, &gwruntime.JSONPb{
+		MarshalOptions: protojson.MarshalOptions{
+			UseProtoNames: true,
+		},
+		UnmarshalOptions: protojson.UnmarshalOptions{
+			DiscardUnknown: true,
+		},
+	})
+	grpcMux := gwruntime.NewServeMux(jsonOption)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -81,8 +92,16 @@ func runGatewayServer(cfg *config.Config, store db.Store) {
 	// 调用grpc-gateway生成的注册服务
 	err = pb.RegisterCreateUserServiceHandlerServer(ctx, grpcMux, server)
 	if err != nil {
-		panic(fmt.Sprintf("Unable to create server: %v", err))
+		panic(fmt.Sprintf("Unable to register grpc server: %v", err))
 	}
+
+	//  创建多路复用器
+	mux := http.NewServeMux()
+	// 路由到grpc服务
+	mux.Handle("/", grpcMux)
+
+	fs := http.FileServer(http.Dir("./doc/swagger"))
+	mux.Handle("/swagger/", http.StripPrefix("/swagger/", fs))
 
 	// 监听端口
 	listen, lisErr := net.Listen("tcp", cfg.HTTPServerAddress)
@@ -90,12 +109,10 @@ func runGatewayServer(cfg *config.Config, store db.Store) {
 		panic(fmt.Sprintf("Unable to create server port: %v", lisErr))
 	}
 
-	log.Printf("gRPC server listening on: %s", listen.Addr().String())
-
-	// 启动grpc服务
-	err = grpcServer.Serve(listen)
+	log.Printf("HTTP server listening on: %s", listen.Addr().String())
+	err = http.Serve(listen, mux)
 	if err != nil {
-		panic(fmt.Sprintf("cannot start server: %v", err))
+		panic(fmt.Sprintf("cannot start HTTP gateway server: %v", err))
 	}
 }
 
