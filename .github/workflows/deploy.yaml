@@ -437,11 +437,6 @@ jobs:
         run: |
           mkdir -pv ~/.kube/
           echo "${{secrets.KUBE_CONF}}" > ~/.kube/config
-      -
-        #
-        name: Generate openapi v2 swagger json
-        run: |
-          make swagger
 
       - name: Build swagger image
         run: |
