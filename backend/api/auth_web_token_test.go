@@ -21,9 +21,10 @@ func addMiddleware(
 	username string,
 	duration time.Duration,
 ) {
-	tokenString, err := tokenMaker.CreateToken(username, duration)
+	tokenString, payload, err := tokenMaker.CreateToken(username, duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, tokenString)
+	require.NotEmpty(t, payload)
 
 	authorizationHeader := fmt.Sprintf("%s %s", authWebTokenType, tokenString)
 	request.Header.Set(constants.AuthorizationHeaderKey, authorizationHeader)

@@ -93,8 +93,9 @@ func randomCreateToken(t *testing.T, username string, duration time.Duration) st
 		secretKey: []byte(secretKey),
 	}
 
-	token, err := maker.CreateToken(username, duration)
+	token, payload, err := maker.CreateToken(username, duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
+	require.NotEmpty(t, payload)
 	return token
 }

@@ -37,9 +37,10 @@ func createToken(t *testing.T) string {
 	require.NotEmpty(t, maker)
 
 	username := pkg.RandomString(5)
-	token, err := maker.CreateToken(username, time.Minute*2)
+	token, payload, err := maker.CreateToken(username, time.Minute*2)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
+	require.NotEmpty(t, payload)
 
 	return token
 }

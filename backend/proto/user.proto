@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+// File overview 文件概述
+
+package simple_bank;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "simple_bank/pb";
+
+message User {
+	string username = 1;
+	string full_name = 2;
+	string email = 3;
+	google.protobuf.Timestamp password_change_at = 4;
+	google.protobuf.Timestamp create_at = 5;
+}

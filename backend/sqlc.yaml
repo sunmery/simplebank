@@ -4,7 +4,9 @@ sql:
     queries: "db/query"
     engine: "postgresql"
     database:
-      uri: postgresql://postgres:${PG_PASSWORD}@localhost:5432/simple_bank?sslmode=disable
+      uri: ${DB_SOURCE}
+      # uri: postgresql://postgres:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/simple_bank?sslmode=disable
+      # uri: postgresql://postgres:postgres@localhost:5432/simple_bank?sslmode=disable
     gen:
       go:
         package: "db"
