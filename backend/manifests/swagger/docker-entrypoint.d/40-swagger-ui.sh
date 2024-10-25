@@ -7,7 +7,6 @@ NGINX_CONF=/etc/nginx/conf.d/default.conf
 
 node /usr/share/nginx/configurator $INITIALIZER_SCRIPT
 
-
 if [ "$SWAGGER_JSON_URL" ]; then
   sed -i "s|https://petstore.swagger.io/v2/swagger.json|$SWAGGER_JSON_URL|g" $INITIALIZER_SCRIPT
   sed -i "s|http://example.com/api|$SWAGGER_JSON_URL|g" $INITIALIZER_SCRIPT
