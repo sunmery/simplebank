@@ -51,7 +51,8 @@ COPY --from=build /bin/main /bin/
 ARG UID=10001
 
 # 后端程序的HTTP/gRPC端口
-ARG PORT=8080
+ARG HTTP_PORT=30001
+ARG GRPC_PORT=30002
 
 # 修改镜像源
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
@@ -73,7 +74,8 @@ USER appuser
 COPY app.env .
 
 # 指定容器对外暴露的端口号
-EXPOSE $PORT
+EXPOSE $HTTP_PORT
+EXPOSE $GRPC_PORT
 
 # 设置容器启动时执行的命令
 CMD ["/bin/main"]
@@ -83,7 +85,8 @@ CMD ["/bin/main"]
 # export REPOSITORY="lisa/backend"
 # export GOOS=linux
 # export GOARCH=amd64
-# export PORT=8080
+# export HTTP_PORT=30001
+# export GRPC_PORT=30002
 # docker build . \
 #   --progress=plain \
 #   -t $REPOSITORY:$VERSION \
@@ -92,7 +95,8 @@ CMD ["/bin/main"]
 #   --build-arg GOOS=$GOOS \
 #   --build-arg GOARCH=$GOARCH \
 #   --build-arg VERSION=$VERSION \
-#   --build-arg PORT=$PORT
+#   --build-arg HTTP_PORT=$HTTP_PORT
+#   --build-arg GRPC_PORT=$GRPC_PORT
 
 # 构建多架构的二进制文件, 需要在Docker Desktop 启用 containerd 映像存储
 # https://docs.docker.com/desktop/containerd/#enable-the-containerd-image-store
@@ -100,14 +104,16 @@ CMD ["/bin/main"]
 # export REPOSITORY="lisa/backend"
 # export GOOS=linux
 # export GOARCH=amd64
-# export PORT=8080
+# export HTTP_PORT=30001
+# export GRPC_PORT=30002
 # docker buildx build . \
 #   --progress=plain \
 #   -t $REPOSITORY:$VERSION \
 #   --build-arg CGOENABLED=0 \
 #   --build-arg GOIMAGE=golang:1.23.1-alpine3.20 \
 #   --build-arg VERSION=$VERSION \
-#   --build-arg PORT=$PORT \
+#   --build-arg HTTP_PORT=$PORT \
+#   --build-arg GRPC_PORT=$PORT \
 #   --build-arg GOOS=$GOOS \
 #   --build-arg GOARCH=$GOARCH \
 #   --platform $GOOS/$GOARCH
@@ -125,7 +131,8 @@ CMD ["/bin/main"]
 # 运行
 # docker run \
 # --rm \
-# -p 8080:8080 \
+# -p 30001:30001 \
+# -p 30002:30002 \
 # -e GIN_MODE=release \
 # -e DB_SOURCE="postgresql://postgres:postgres@159.75.231.54:5432/simple_bank?sslmode=disable" \
 # $register/container:$VERSION
