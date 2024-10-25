@@ -441,6 +441,7 @@ jobs:
     env:
       VERSION: v2.0.0
       TIMEOUT: 30s
+      SWAGGER_NAMESPACE: bank
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -476,6 +477,14 @@ jobs:
       - # 部署到Kubernetes环境
         name: Deploy static api docs site
         run: |
+          if ./kubectl get ns ${BACKEND_NAMESPACE}; then
+            echo "namespaces ${BACKEND_NAMESPACE} already exists, skip create"
+          else
+            ./kubectl create ns ${BACKEND_NAMESPACE}
+          fi
+          
+          ./kubectl config set-context --current --namespace $SWAGGER_NAMESPACE
+
           ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_SWAGGER_REPOSITORY }}:${VERSION}
           ./kustomize build . | kubectl apply -f -
  

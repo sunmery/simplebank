@@ -9,8 +9,8 @@ RUN apk update && apk add --no-cache "nodejs>=18.20.1-r0 "
 LABEL maintainer="mandala"
 
 ENV API_KEY="**None**" \
-    SWAGGER_JSON="simple_bank.swagger.json" \
-    PORT="8081" \
+    SWAGGER_JSON="" \
+    PORT="8080" \
     PORT_IPV6="" \
     BASE_URL="/" \
     SWAGGER_JSON_URL="simple_bank.swagger.json" \
