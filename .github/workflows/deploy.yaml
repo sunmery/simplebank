@@ -117,6 +117,8 @@ jobs:
       # 建议使用1024以上端口, 再通过Ingress/Gateway或者LoadBalancer来映射为80/443端口
       HTTP_PORT: 3000
       HTTPS_PORT: 4430
+      # 等待Pod部署完成的超时时间
+      TIMEOUT: 30s
     defaults:
       run:
         shell: bash
@@ -218,7 +220,7 @@ jobs:
           ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:${VERSION}
           ./kustomize build . | kubectl apply -f -
           
-          ./kubectl rollout status deploy
+          ./kubectl rollout status deploy --timeout=${TIMEOUT}
           ./kubectl get po -owide
           ./kubectl get svc
 
@@ -359,6 +361,8 @@ jobs:
     env:
       DEPLOYMENT_NAME: simple-bank-api
       BACKEND_NAMESPACE: bank
+      # 等待Pod部署完成的超时时间
+      TIMEOUT: 30s
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -473,7 +477,7 @@ jobs:
         run: |
           ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_SWAGGER_REPOSITORY }}:${VERSION}
           ./kustomize build . | kubectl apply -f -
-
-          ./kubectl rollout status deploy
+ 
+          ./kubectl rollout status deploy --timeout=${TIMEOUT}
           ./kubectl get po -owide
           ./kubectl get svc

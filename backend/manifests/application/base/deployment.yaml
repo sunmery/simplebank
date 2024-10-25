@@ -20,7 +20,9 @@ spec:
           image: example
           imagePullPolicy: Always
           ports:
-            - containerPort: 8080
+            - containerPort: 30001
+              protocol: TCP
+            - containerPort: 30002
               protocol: TCP
           #livenessProbe:
           #  httpGet:
