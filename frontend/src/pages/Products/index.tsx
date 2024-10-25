@@ -96,7 +96,7 @@ export default function Products() {
 			item: [
 				{
 					name: 'Higress',
-					url: 'http://node8.api-r.com:32106/',
+					url: 'http://node6.api-r.com:31871/',
 				},
 			],
 		},
