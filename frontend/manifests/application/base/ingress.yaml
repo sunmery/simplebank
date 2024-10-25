@@ -7,7 +7,7 @@ metadata:
 spec:
   ingressClassName: higress
   rules:
-    - host: "web.lookeke.com"
+    - host: "web.api-r.com"
     - http:
         paths:
           - path: /
@@ -19,5 +19,5 @@ spec:
                   number: 443
   tls:
     - hosts:
-        - web.lookeke.com
+        - web.api-r.com
       secretName: simple-bank-web-sect

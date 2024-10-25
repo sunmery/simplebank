@@ -440,6 +440,7 @@ jobs:
     needs: swagger-build
     env:
       VERSION: v2.0.0
+      TIMEOUT: 30s
     runs-on: ubuntu-latest
     defaults:
       run:
