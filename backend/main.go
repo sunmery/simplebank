@@ -36,6 +36,7 @@ func main() {
 
 	go runGatewayServer(cfg, store)
 	runGrpcServer(cfg, store)
+	// runGinServer(cfg, store)
 }
 
 // Grpc服务

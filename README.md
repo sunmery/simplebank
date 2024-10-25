@@ -11,6 +11,22 @@
 3. 支持Docker与Kubernetes部署
 4. 集百家所长
 
+## 最佳实践
+### 错误处理
+1. 在rpc的处理错误中返回的字段名应为proto中定义的字段格式, 即蛇形命名
+例: 校验rpc参数
+```go
+func validateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+
+	// 应为proto中定义的字段名, 即蛇形命名法的字段
+	if err := validator.ValidateUsername(req.GetFullName()); err != nil {
+		violations = append(violations, fieldViolation("full_name", err))
+	}
+
+	return
+}
+```
+
 ### 前端
 
 前端技术栈使用React作为前端kit, 考量有: React灵活, 前端的生态最丰富

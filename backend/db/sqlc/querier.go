@@ -128,6 +128,17 @@ type Querier interface {
 	//  WHERE id = $1
 	//  RETURNING id, owner, balance, currency, created_at
 	UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Accounts, error)
+	//UpdateUser
+	//
+	//  UPDATE users
+	//  SET
+	//       username = coalesce($1, username),
+	//       full_name = coalesce($2, full_name),
+	//       hashed_password = coalesce($3, hashed_password),
+	//       email = coalesce($4, email)
+	//  WHERE username = $1
+	//  RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at
+	UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, error)
 }
 
 var _ Querier = (*Queries)(nil)

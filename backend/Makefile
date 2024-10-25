@@ -29,9 +29,6 @@ migrate-down:
 migrate-down1:
 	migrate -database "${DB_SOURCE}" -path db/migrate -verbose down 1
 
-server:
-	go run .
-
 # go test
 test:
 	go test -v -cover ./...
@@ -61,5 +58,12 @@ swagger:
 	--openapiv2_opt=allow_merge=true,merge_file_name=simple_bank \
 	--openapiv2_opt=openapi_naming_strategy=fqn \
 	proto/*.proto
+
+
+server:
+	make proto
+	make mock
+	make swagger
+	go run .
 
 .PHONY: sqlc pg-up pg-down migrate-up migrate-up1 migrate-down migrate-down1 test server mock proto evans swagger

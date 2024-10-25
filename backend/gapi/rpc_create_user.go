@@ -5,15 +5,23 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/jackc/pgx/v5/pgconn"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	db "simple_bank/db/sqlc"
 	"simple_bank/pb"
 	"simple_bank/pkg"
+	"simple_bank/validator"
 )
 
 func (s *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+	// 校验rpc参数
+	violations := validateCreateUserRequest(req)
+	if violations != nil {
+		return nil, invalidCounterargument(violations)
+	}
+
 	password, err := pkg.HashPassword(req.GetPassword())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "无法获取密码")
@@ -49,6 +57,12 @@ func (s *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb
 }
 
 func (s *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.LoginUserResponse, error) {
+	// 校验登录参数
+	violations := validateLoginUserRequest(req)
+	if violations != nil {
+		return nil, invalidCounterargument(violations)
+	}
+
 	// 查询客户端传递的username参数
 	user, err := s.store.GetUser(ctx, req.Username)
 	if err != nil {
@@ -105,4 +119,35 @@ func (s *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.L
 		AccessTokenExpiresAt:  timestamppb.New(accessPayload.ExpiresAt.Time),
 		RefreshTokenExpiresAt: timestamppb.New(refreshPayload.ExpiresAt.Time),
 	}, nil
+}
+
+// 校验注册用户RPC参数
+func validateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+	if err := validator.ValidateUsername(req.GetUsername()); err != nil {
+		violations = append(violations, fieldViolation("username", err))
+	}
+	// 应为proto中定义的字段名, 即蛇形命名法的字段
+	if err := validator.ValidateFullName(req.GetFullName()); err != nil {
+		violations = append(violations, fieldViolation("full_name", err))
+	}
+	if err := validator.ValidatePassword(req.GetPassword()); err != nil {
+		violations = append(violations, fieldViolation("password", err))
+	}
+	if err := validator.ValidateEmail(req.GetEmail()); err != nil {
+		violations = append(violations, fieldViolation("email", err))
+	}
+	return
+}
+
+// 校验用户登录RPC参数
+func validateLoginUserRequest(req *pb.LoginUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+	if err := validator.ValidateUsername(req.GetUsername()); err != nil {
+		violations = append(violations, fieldViolation("username", err))
+	}
+
+	if err := validator.ValidatePassword(req.GetPassword()); err != nil {
+		violations = append(violations, fieldViolation("password", err))
+	}
+
+	return
 }

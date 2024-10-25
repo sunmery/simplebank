@@ -18,6 +18,9 @@ import { Route as rootRoute } from './routes/__root'
 
 const IndexLazyImport = createFileRoute('/')()
 const RegisterIndexLazyImport = createFileRoute('/register/')()
+const ProfileIndexLazyImport = createFileRoute('/profile/')()
+const ProductsIndexLazyImport = createFileRoute('/products/')()
+const LogoutIndexLazyImport = createFileRoute('/logout/')()
 const LoginIndexLazyImport = createFileRoute('/login/')()
 
 // Create/Update Routes
@@ -33,6 +36,23 @@ const RegisterIndexLazyRoute = RegisterIndexLazyImport.update({
 } as any).lazy(() =>
   import('./routes/register/index.lazy').then((d) => d.Route),
 )
+
+const ProfileIndexLazyRoute = ProfileIndexLazyImport.update({
+  path: '/profile/',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/profile/index.lazy').then((d) => d.Route))
+
+const ProductsIndexLazyRoute = ProductsIndexLazyImport.update({
+  path: '/products/',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/products/index.lazy').then((d) => d.Route),
+)
+
+const LogoutIndexLazyRoute = LogoutIndexLazyImport.update({
+  path: '/logout/',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/logout/index.lazy').then((d) => d.Route))
 
 const LoginIndexLazyRoute = LoginIndexLazyImport.update({
   path: '/login/',
@@ -57,6 +77,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginIndexLazyImport
       parentRoute: typeof rootRoute
     }
+    '/logout/': {
+      id: '/logout/'
+      path: '/logout'
+      fullPath: '/logout'
+      preLoaderRoute: typeof LogoutIndexLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/products/': {
+      id: '/products/'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof ProductsIndexLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/profile/': {
+      id: '/profile/'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileIndexLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/register/': {
       id: '/register/'
       path: '/register'
@@ -72,12 +113,18 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/login': typeof LoginIndexLazyRoute
+  '/logout': typeof LogoutIndexLazyRoute
+  '/products': typeof ProductsIndexLazyRoute
+  '/profile': typeof ProfileIndexLazyRoute
   '/register': typeof RegisterIndexLazyRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/login': typeof LoginIndexLazyRoute
+  '/logout': typeof LogoutIndexLazyRoute
+  '/products': typeof ProductsIndexLazyRoute
+  '/profile': typeof ProfileIndexLazyRoute
   '/register': typeof RegisterIndexLazyRoute
 }
 
@@ -85,27 +132,43 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
   '/login/': typeof LoginIndexLazyRoute
+  '/logout/': typeof LogoutIndexLazyRoute
+  '/products/': typeof ProductsIndexLazyRoute
+  '/profile/': typeof ProfileIndexLazyRoute
   '/register/': typeof RegisterIndexLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/register'
+  fullPaths: '/' | '/login' | '/logout' | '/products' | '/profile' | '/register'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/register'
-  id: '__root__' | '/' | '/login/' | '/register/'
+  to: '/' | '/login' | '/logout' | '/products' | '/profile' | '/register'
+  id:
+    | '__root__'
+    | '/'
+    | '/login/'
+    | '/logout/'
+    | '/products/'
+    | '/profile/'
+    | '/register/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   LoginIndexLazyRoute: typeof LoginIndexLazyRoute
+  LogoutIndexLazyRoute: typeof LogoutIndexLazyRoute
+  ProductsIndexLazyRoute: typeof ProductsIndexLazyRoute
+  ProfileIndexLazyRoute: typeof ProfileIndexLazyRoute
   RegisterIndexLazyRoute: typeof RegisterIndexLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   LoginIndexLazyRoute: LoginIndexLazyRoute,
+  LogoutIndexLazyRoute: LogoutIndexLazyRoute,
+  ProductsIndexLazyRoute: ProductsIndexLazyRoute,
+  ProfileIndexLazyRoute: ProfileIndexLazyRoute,
   RegisterIndexLazyRoute: RegisterIndexLazyRoute,
 }
 
@@ -123,6 +186,9 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/login/",
+        "/logout/",
+        "/products/",
+        "/profile/",
         "/register/"
       ]
     },
@@ -131,6 +197,15 @@ export const routeTree = rootRoute
     },
     "/login/": {
       "filePath": "login/index.lazy.tsx"
+    },
+    "/logout/": {
+      "filePath": "logout/index.lazy.tsx"
+    },
+    "/products/": {
+      "filePath": "products/index.lazy.tsx"
+    },
+    "/profile/": {
+      "filePath": "profile/index.lazy.tsx"
     },
     "/register/": {
       "filePath": "register/index.lazy.tsx"

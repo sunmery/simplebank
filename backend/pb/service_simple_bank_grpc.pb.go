@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	CreateUserService_CreateUser_FullMethodName = "/simple_bank.CreateUserService/CreateUser"
 	CreateUserService_LoginUser_FullMethodName  = "/simple_bank.CreateUserService/LoginUser"
+	CreateUserService_UpdateUser_FullMethodName = "/simple_bank.CreateUserService/UpdateUser"
 )
 
 // CreateUserServiceClient is the client API for CreateUserService service.
@@ -31,6 +32,7 @@ const (
 type CreateUserServiceClient interface {
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 	LoginUser(ctx context.Context, in *LoginUserRequest, opts ...grpc.CallOption) (*LoginUserResponse, error)
+	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
 }
 
 type createUserServiceClient struct {
@@ -61,12 +63,23 @@ func (c *createUserServiceClient) LoginUser(ctx context.Context, in *LoginUserRe
 	return out, nil
 }
 
+func (c *createUserServiceClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateUserResponse)
+	err := c.cc.Invoke(ctx, CreateUserService_UpdateUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CreateUserServiceServer is the server API for CreateUserService service.
 // All implementations must embed UnimplementedCreateUserServiceServer
 // for forward compatibility.
 type CreateUserServiceServer interface {
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error)
+	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
 	mustEmbedUnimplementedCreateUserServiceServer()
 }
 
@@ -82,6 +95,9 @@ func (UnimplementedCreateUserServiceServer) CreateUser(context.Context, *CreateU
 }
 func (UnimplementedCreateUserServiceServer) LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoginUser not implemented")
+}
+func (UnimplementedCreateUserServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
 }
 func (UnimplementedCreateUserServiceServer) mustEmbedUnimplementedCreateUserServiceServer() {}
 func (UnimplementedCreateUserServiceServer) testEmbeddedByValue()                           {}
@@ -140,6 +156,24 @@ func _CreateUserService_LoginUser_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CreateUserService_UpdateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CreateUserServiceServer).UpdateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CreateUserService_UpdateUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CreateUserServiceServer).UpdateUser(ctx, req.(*UpdateUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CreateUserService_ServiceDesc is the grpc.ServiceDesc for CreateUserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -154,6 +188,10 @@ var CreateUserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "LoginUser",
 			Handler:    _CreateUserService_LoginUser_Handler,
+		},
+		{
+			MethodName: "UpdateUser",
+			Handler:    _CreateUserService_UpdateUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
