@@ -391,10 +391,10 @@ jobs:
       # Deploy the Docker image to the TKE cluster
       - name: Deploy
         run: |
-          if ./kubectl get ns ${BACKEND_NAMESPACE; then
-            echo "namespaces ${BACKEND_NAMESPACE already exists, skip create"
+          if ./kubectl get ns $BACKEND_NAMESPACE; then
+            echo "namespaces $BACKEND_NAMESPACE already exists, skip create"
           else
-            ./kubectl create ns ${BACKEND_NAMESPACE
+            ./kubectl create ns $BACKEND_NAMESPACE
           fi
           
           ./kubectl config set-context --current --namespace $BACKEND_NAMESPACE
@@ -402,7 +402,7 @@ jobs:
           ./kubectl delete secret db-source-secret || true 
           ./kubectl create secret generic db-source-secret --from-literal='DB_SOURCE=${{ secrets.DB_SOURCE }}'
           
-          ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:${VERSION
+          ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$VERSION
           ./kustomize build . | kubectl apply -f -
           
           ./kubectl rollout status deploy
