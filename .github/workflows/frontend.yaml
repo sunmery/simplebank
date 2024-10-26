@@ -1,20 +1,25 @@
 name: Deploy frontend application to production
 run-name: ${{ github.actor }} is learning GitHub Actions
 
+# git add .; git commit -m "test: test github actions"
+# git tag v1.1.8; git push; git push main v1.1.8
 on:
   push:
     tags:
       - 'v*.*.*'
 
-# 如果工作流是由标签触发的（例如 refs/tags/v1.0.0），那么 VERSION 变量会被设置为标签名称（例如 v1.0.0）。
-# 如果工作流是由其他方式（例如分支推送或拉取请求）触发的，那么 VERSION 变量会被设置为当前 Git 引用的名称, 例如 main
 env:
   # https://docs.github.com/zh/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context
   VERSION: ${{ github.ref_name }}
+  # Node版本
   NODE_VERSION: node:22-alpine3.19
+  # pnpm包版本
   PACK_VERSION: latest
+  # http端口
   HTTP_PORT: 30003
+  # https端口
   HTTPS_PORT: 30004
+  # 前端命名空间
   FRONTEND_NAMESPACE: bank
   # 1024以下端口需要容器的特权(即root)权限才能执行, 运行特权权限容器有安全风险
   # 建议使用1024以上端口, 再通过Ingress/Gateway或者LoadBalancer来映射为80/443端口

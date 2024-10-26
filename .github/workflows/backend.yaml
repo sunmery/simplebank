@@ -4,23 +4,33 @@
 name: Deploy backend application and swagger document to production
 run-name: ${{ github.actor }} is learning GitHub Actions
 
+# git add .; git commit -m "test: test github actions"
+# git tag v1.1.8; git push; git push main v1.1.8
 on:
   push:
     tags:
       - 'v*.*.*'
-
-# 如果工作流是由标签触发的（例如 refs/tags/v1.0.0），那么 VERSION 变量会被设置为标签名称（例如 v1.0.0）。
-# 如果工作流是由其他方式（例如分支推送或拉取请求）触发的，那么 VERSION 变量会被设置为当前 Git 引用的名称, 例如 main
 env:
+  # 版本号, git tag的标签名
+  # https://docs.github.com/zh/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context
   VERSION: ${{ github.ref_name }}
+  # 目标的操作系统
   GOOS: linux
+  # 目标的架构
   GOARCH: amd64
+  # golang的镜像
   GO_IMAGE: golang:1.23.1-alpine3.20
+  # golang环境变量
   CGO_ENABLED: 0
+  # 等待部署完成的超时时间, 超时即为失败
   DEPLOY_TIMEOUT: 30s
+  # 后端应用的命名空间
   BACKEND_NAMESPACE: bank
+  # 后端应用的HTTP端口
   BACKEND_HTTP_PORT: 8080
+  # 后端应用的GRPC端口
   BACKEND_GRPC_PORT: 8080
+  # 后端应用的swagger端口
   SWAGGER_PORT: 8080
 
 jobs:
@@ -52,7 +62,7 @@ jobs:
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
-          --health-DEPLOY_TIMEOUT 5s
+          --health-timeout 5s
           --health-retries 5
         # Maps tcp port 5432 on service container to the host
         ports:
