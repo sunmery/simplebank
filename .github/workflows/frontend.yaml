@@ -101,6 +101,7 @@ jobs:
         name: Build tag and push image to Cloud Registry
 
         run: |
+          echo "VERSION is $VERSION"
           docker buildx build . \
             --progress=plain \
             -t actions/frontend \
