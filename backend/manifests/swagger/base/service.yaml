@@ -6,7 +6,7 @@ spec:
   selector:
     app: simple-bank-swagger
   ports:
-    - name: tcp
+    - name: http
       port: 8080
       nodePort: 30006
       protocol: TCP

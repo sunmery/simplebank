@@ -432,7 +432,7 @@ jobs:
       - # 打包swagger静态文件为镜像
         name: Build swagger image
         run: |
-          docker build . --progress=plain -t actions/swagger -f swagger-Dockerfile
+          docker build . --progress=plain -t actions/swagge  -f swagger-Dockerfile
           docker tag actions/swagger ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_SWAGGER_REPOSITORY }}:$VERSION
           docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_SWAGGER_REPOSITORY }}:$VERSION
 

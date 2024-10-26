@@ -59,6 +59,17 @@ swagger:
 	--openapiv2_opt=openapi_naming_strategy=fqn \
 	proto/*.proto
 
+swagger-build:
+	docker build . --progress=plain -t actions/swagge  -f swagger-Dockerfile
+
+swagger-run:
+	docker run --rm \
+    -p 8080:8080 \
+    actions/swagge
+
+swagger-push:
+	docker tag actions/swagge ccr.ccs.tencentyun.com/lisa/swagger:v2.0.3
+	docker push ccr.ccs.tencentyun.com/lisa/swagger:v2.0.3
 
 server:
 	make proto
@@ -66,4 +77,4 @@ server:
 	make swagger
 	go run .
 
-.PHONY: sqlc pg-up pg-down migrate-up migrate-up1 migrate-down migrate-down1 test server mock proto evans swagger
+.PHONY: sqlc pg-up pg-down migrate-up migrate-up1 migrate-down migrate-down1 test server mock proto evans swagger swagger-build swagger-run
