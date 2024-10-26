@@ -6,13 +6,13 @@ run-name: ${{ github.actor }} is learning GitHub Actions
 
 on:
   push:
-    branches: ["main", "beta"]
-    tag: "v*"
+    tags:
+      - 'v*.*.*'
 
 # 如果工作流是由标签触发的（例如 refs/tags/v1.0.0），那么 VERSION 变量会被设置为标签名称（例如 v1.0.0）。
 # 如果工作流是由其他方式（例如分支推送或拉取请求）触发的，那么 VERSION 变量会被设置为当前 Git 引用的名称, 例如 main
 env:
-  VERSION: ${{ github.ref }}
+  VERSION: ${{ github.ref_name }}
   GOOS: linux
   GOARCH: amd64
   GO_IMAGE: golang:1.23.1-alpine3.20
