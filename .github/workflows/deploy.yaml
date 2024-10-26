@@ -433,7 +433,7 @@ jobs:
         name: Build swagger image
         run: |
           docker build . --progress=plain -t actions/swagge  -f swagger-Dockerfile
-          docker tag actions/swagger ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_SWAGGER_REPOSITORY }}:$VERSION
+          docker tag actions/swagger:$VERSION ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_SWAGGER_REPOSITORY }}:$VERSION
           docker push ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_SWAGGER_REPOSITORY }}:$VERSION
 
   swagger-deploy:
