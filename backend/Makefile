@@ -59,8 +59,10 @@ swagger:
 	--openapiv2_opt=openapi_naming_strategy=fqn \
 	proto/*.proto
 
+#
 swagger-build:
-	docker build . --progress=plain -t actions/swagger  -f Dockerfile-swagger
+	docker buildx build . --progress=plain -t actions/swagger -f Dockerfile-swagger --platform linux/amd64
+	# docker build . --progress=plain -t actions/swagger -f Dockerfile-swagger
 
 swagger-run:
 	docker run --rm \

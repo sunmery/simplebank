@@ -4,6 +4,8 @@
 
 FROM nginx:1.27.2-alpine
 
+ARG PORT=8080
+
 RUN apk update && apk add --no-cache "nodejs>=18.20.1-r0 "
 
 LABEL maintainer="mandala"
@@ -27,4 +29,4 @@ COPY --chmod=0666 ./manifests/swagger/configurator /usr/share/nginx/configurator
 # In future we will have separate unpriviledged images tagged as v5.1.2-unprivileged.
 RUN chmod 777 /usr/share/nginx/html/ /etc/nginx/conf.d/ /etc/nginx/conf.d/default.conf /var/cache/nginx/ /var/run/
 
-EXPOSE 8080
+EXPOSE $PORT

@@ -97,6 +97,7 @@ CMD ["/bin/main"]
 #   --build-arg VERSION=$VERSION \
 #   --build-arg HTTP_PORT=$HTTP_PORT
 #   --build-arg GRPC_PORT=$GRPC_PORT
+#   --load
 
 # 构建多架构的二进制文件, 需要在Docker Desktop 启用 containerd 映像存储
 # https://docs.docker.com/desktop/containerd/#enable-the-containerd-image-store

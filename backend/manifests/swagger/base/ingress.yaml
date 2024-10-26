@@ -7,7 +7,7 @@ metadata:
 spec:
   ingressClassName: higress
   rules:
-    - host: "swagger.lookeke.com"
+    - host: "swagger.api-r.com"
     - http:
         paths:
           - path: /
@@ -19,5 +19,5 @@ spec:
                   number: 80
   tls:
     - hosts:
-        - swagger.lookeke.com
+        - swagger.api-r.com
       secretName: simple-bank-swagger-cert
