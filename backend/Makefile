@@ -60,15 +60,15 @@ swagger:
 	proto/*.proto
 
 swagger-build:
-	docker build . --progress=plain -t actions/swagge  -f swagger-Dockerfile
+	docker build . --progress=plain -t actions/swagger  -f Dockerfile-swagger
 
 swagger-run:
 	docker run --rm \
     -p 8080:8080 \
-    actions/swagge
+    actions/swagger
 
 swagger-push:
-	docker tag actions/swagge ccr.ccs.tencentyun.com/lisa/swagger:v2.0.3
+	docker tag actions/swagger ccr.ccs.tencentyun.com/lisa/swagger:v2.0.3
 	docker push ccr.ccs.tencentyun.com/lisa/swagger:v2.0.3
 
 server:
