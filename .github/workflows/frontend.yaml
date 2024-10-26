@@ -225,7 +225,7 @@ jobs:
           ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_FRONTEND_REPOSITORY }}:$VERSION
           ./kustomize build . | kubectl apply -f -
           
-          ./kubectl rollout status deploy --DEPLOY_TIMEOUT=$DEPLOY_TIMEOUT
+          ./kubectl rollout status deploy --timeout=$DEPLOY_TIMEOUT
           ./kubectl get po -owide
           ./kubectl get svc
 
