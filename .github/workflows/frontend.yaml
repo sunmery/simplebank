@@ -3,13 +3,14 @@ run-name: ${{ github.actor }} is learning GitHub Actions
 
 on:
   push:
-    branches: ["main", "beta"]
-    # tag: "v*"
+    branches:
+      - main
+    tag: "v*"
 
 # 如果工作流是由标签触发的（例如 refs/tags/v1.0.0），那么 VERSION 变量会被设置为标签名称（例如 v1.0.0）。
 # 如果工作流是由其他方式（例如分支推送或拉取请求）触发的，那么 VERSION 变量会被设置为当前 Git 引用的名称, 例如 main
 env:
-  VERSION: ${{ github.ref }}
+  VERSION: ${{ env.GITHUB_REF_NAME }}
   NODE_VERSION: node:22-alpine3.19
   PACK_VERSION: latest
   HTTP_PORT: 30003
@@ -23,6 +24,22 @@ env:
   DEPLOY_TIMEOUT: 30s
 
 jobs:
+
+  set-version:
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set version number
+        run: |
+          if [[ ${{ github.ref }} == refs/heads/main ]]; then
+            echo "VERSION=latest" >> $GITHUB_ENV
+          elif [[ ${{ github.ref }} =~ ^refs/tags/v ]]; then
+            echo "VERSION=$(echo ${{ github.ref }} | sed 's|^refs/tags/||')" >> $GITHUB_ENV
+          else
+            echo "VERSION=${{ env.GITHUB_REF_NAME }}" >> $GITHUB_ENV
+          fi
+        shell: bash
 
   frontend-build-dist:
     # 将作业配置为在最新版本的Ubuntu Linux运行程序上运行,
