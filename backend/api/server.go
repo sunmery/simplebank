@@ -51,7 +51,7 @@ func NewServer(config *config.Config, store db.Store) (*Server, error) {
 func (s *Server) setupRouter() {
 	// 	gin.SetMode(gin.ReleaseMode)
 	routes := gin.Default()
-	routes.Use(middleware.Cors())
+	routes.Use(middleware.GinCors())
 
 	// kubernetes 健康检查
 	routes.GET("/healthz", s.healthCheck)

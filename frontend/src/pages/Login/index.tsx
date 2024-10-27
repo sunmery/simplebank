@@ -18,7 +18,7 @@ interface LoginResponse {
 
 const getUser = async (username: string, password: string) => {
 	try {
-		const res = await fetch('http://localhost:8080/users/login', {
+		const res = await fetch('http://localhost:30001/users/login', {
 			method: 'POST',
 			headers: {'Content-Type': 'application/json'},
 			body: JSON.stringify({username, password}),

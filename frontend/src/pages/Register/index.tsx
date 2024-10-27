@@ -10,14 +10,24 @@ interface RegisterUser {
 	password: string
 }
 
+interface RegisterResponse {
+	user: {
+		username: string
+		full_name: string
+		email: string
+		password_change_at: string
+		create_at: string
+	}
+}
+
 const createUser = async (user: RegisterUser) => {
 	try {
-		const res = await fetch(`${import.meta.env.VITE_URL}/users`, {
+		const res = await fetch(`${import.meta.env.VITE_URL}/v1/create_user`, {
 			method: 'PUT',
-			headers: {'Content-Type': 'application/json', 'Host': 'api.lookeke.com'},
+			headers: {'Content-Type': 'application/json'},
 			body: JSON.stringify({...user}),
 		})
-		const data: RegisterUser = await res.json()
+		const data: RegisterResponse = await res.json()
 		console.log(data)
 		return data
 	} catch (error) {

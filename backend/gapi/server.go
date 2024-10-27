@@ -40,8 +40,3 @@ func NewServer(config *config.Config, store db.Store) (*Server, error) {
 func (s *Server) Start(address string) error {
 	return s.router.Run(address)
 }
-
-// 错误处理
-func errorResponse(err error) gin.H {
-	return gin.H{"error": err.Error()}
-}

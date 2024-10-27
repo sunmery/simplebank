@@ -21,4 +21,4 @@ spec:
   tls:
     - hosts:
         - web.api-r.com
-      secretName: simple-bank-web-sect
+      secretName: api-r-com-secret
