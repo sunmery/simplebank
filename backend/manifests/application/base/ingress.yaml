@@ -16,7 +16,16 @@ spec:
               service:
                 name: api-simple-bank-service
                 port:
-                  number: 80
+                  number: 30001
+
+          - path: /v1/*
+            pathType: Prefix
+            backend:
+              service:
+                name: api-simple-bank-service
+                port:
+                  number: 30002
+
   tls:
     - hosts:
         - svc.api-r.com
