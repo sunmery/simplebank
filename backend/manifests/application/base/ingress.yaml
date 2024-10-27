@@ -10,6 +10,14 @@ spec:
     - host: "svc.api-r.com"
     - http:
         paths:
+          - path: /v1/*
+            pathType: Prefix
+            backend:
+              service:
+                name: api-simple-bank-service
+                port:
+                  number: 30002
+
           - path: /
             pathType: Prefix
             backend:
@@ -18,13 +26,7 @@ spec:
                 port:
                   number: 30001
 
-          - path: /v1/*
-            pathType: Prefix
-            backend:
-              service:
-                name: api-simple-bank-service
-                port:
-                  number: 30002
+
 
   tls:
     - hosts:

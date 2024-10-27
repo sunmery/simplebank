@@ -16,7 +16,8 @@ spec:
               service:
                 name: web-simple-bank-service
                 port:
-                  number: 443
+                  number: 4430
+
   tls:
     - hosts:
         - web.api-r.com

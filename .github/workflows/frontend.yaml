@@ -181,7 +181,7 @@ jobs:
               listen $NGINX_HTTPS_PORT quic reuseport;
 
               # http/2 and http/1.1
-              listen $HTTPS_PORT ssl;
+              listen $NGINX_HTTPS_PORT ssl;
               http2 on;
 
               # 以下为各种 HTTP 安全相关头部的设置
@@ -189,7 +189,7 @@ jobs:
               add_header X-XSS-Protection "1; mode=block" always;
               add_header X-Frame-Options SAMEORIGIN always;
               add_header X-Content-Type-Options nosniff;
-              add_header Alt-Svc 'h3=":$HTTPS_PORT"; ma=86400, h3-29=":$HTTPS_PORT"; ma=86400';
+              add_header Alt-Svc 'h3=":$NGINX_HTTPS_PORT"; ma=86400, h3-29=":$NGINX_HTTPS_PORT"; ma=86400';
 
               # SSL/TLS 相关配置
               ssl_protocols TLSv1.3 TLSv1.2;  # 设置支持的 SSL 协议版本
@@ -212,10 +212,6 @@ jobs:
           EOF
           ./kubectl delete cm nginx-conf || true
           ./kubectl create cm nginx-conf --from-file=/tmp/nginx.conf
-
-          ./kubectl delete cm nginx-conf || true
-          ./kubectl create cm nginx-conf --from-file=/tmp/nginx.conf
-
 
           ./kubectl delete secret nginx-ssl || true
           ./kubectl create secret generic nginx-ssl \
