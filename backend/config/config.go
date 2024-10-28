@@ -8,6 +8,7 @@ import (
 )
 
 type Config struct {
+	ENVIRONMENT          string        `mapstructure:"ENVIRONMENT"`
 	DBSource             string        `mapstructure:"DB_SOURCE"`
 	HTTPServerAddress    string        `mapstructure:"HTTP_SEVER_ADDRESS"`
 	GRPCServerAddress    string        `mapstructure:"GRPC_SEVER_ADDRESS"`
