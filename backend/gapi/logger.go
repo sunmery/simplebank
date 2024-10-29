@@ -45,9 +45,22 @@ func GrpcLogger(
 		logger = log.Error().Err(err)
 	}
 
-	logger.
+	logger.Type("context", struct {
+		UserId    string
+		Username  string
+		IpAddr    string
+		UserAgent string
+	}{
+		UserId:    "",
+		Username:  "",
+		IpAddr:    "",
+		UserAgent: "",
+	}).
+		Str("environment", "").
+		Str("service", "").
 		Str("protocol", "grpc").
 		Str("method", info.FullMethod).
+		Str("transactionId", "").
 		Dur("duration", duration).
 		Int("status_code", int(statusCode)).
 		Str("status_text", statusCode.String()).
@@ -104,7 +117,14 @@ func HttpLogger(handler http.Handler) http.Handler {
 
 		logger.Str("protocol", "http").
 			Str("method", req.Method).
-			Str("path", req.RequestURI).
+			Str("url", req.RequestURI).
+			Type("headers", struct {
+				ContentType string
+				Accept      string
+			}{
+				ContentType: req.Header.Get("Content-Type"),
+				Accept:      req.Header.Get("Accept"),
+			}).
 			Dur("duration", duration).
 			Int("status_code", rec.StatusCode).
 			Str("status_text", http.StatusText(rec.StatusCode)).

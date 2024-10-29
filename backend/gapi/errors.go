@@ -19,7 +19,7 @@ func fieldViolation(field string, err error) *errdetails.BadRequest_FieldViolati
 // 返回值: 自定义错误对象
 func invalidCounterargument(violations []*errdetails.BadRequest_FieldViolation) error {
 	badRequest := &errdetails.BadRequest{FieldViolations: violations}
-	statusInvalid := status.New(codes.InvalidArgument, "坏得请求")
+	statusInvalid := status.New(codes.InvalidArgument, "Bab Request")
 
 	statusDetails, err := statusInvalid.WithDetails(badRequest)
 	if err != nil {

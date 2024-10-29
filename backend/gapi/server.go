@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"simple_bank/config"
 	"simple_bank/pb"
+	"simple_bank/worker"
 
 	"simple_bank/pkg/token"
 
@@ -15,22 +16,24 @@ type Server struct {
 	// 提供所有的函数调用,但是返回错误, 主要为了向前兼容
 	// 可以并行处理多个RPC,而不会互相阻塞
 	pb.UnimplementedCreateUserServiceServer
-	config    *config.Config
-	store     db.Store
-	tokenMake token.Maker
-	router    *gin.Engine
+	config          *config.Config
+	store           db.Store
+	tokenMake       token.Maker
+	router          *gin.Engine
+	taskDistributor worker.TaskDistributor
 }
 
-func NewServer(config *config.Config, store db.Store) (*Server, error) {
+func NewServer(config *config.Config, store db.Store, taskDistributor worker.TaskDistributor) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("error creating token maker: %w", err)
 	}
 
 	server := &Server{
-		config:    config,
-		store:     store,
-		tokenMake: tokenMaker,
+		config:          config,
+		store:           store,
+		tokenMake:       tokenMaker,
+		taskDistributor: taskDistributor,
 	}
 
 	return server, nil

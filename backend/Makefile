@@ -6,6 +6,7 @@ sqlc:
 
 # 启动postgres容器
 pg-up:
+	make migrate-up
 	docker compose -f manifests/database/docker/docker-compose.yaml up -d
 
 # 停止postgres容器
@@ -28,6 +29,18 @@ migrate-down:
 # 向下降级一个版本, 根据数据库的表schema_migrations的version来决定
 migrate-down1:
 	migrate -database "${DB_SOURCE}" -path db/migrate -verbose down 1
+
+# 启动redis
+redis-up:
+	docker-compose -f manifests/cache/redis/docker/compose.yaml up -d
+
+# 关闭redis
+redis-down:
+	docker-compose -f manifests/cache/redis/docker/compose.yaml down
+
+# 测试redis是否正常
+redis-ping:
+	docker exec -it redis7 redis-cli ping
 
 # go test
 test:
@@ -79,4 +92,4 @@ server:
 	make swagger
 	go run .
 
-.PHONY: sqlc pg-up pg-down migrate-up migrate-up1 migrate-down migrate-down1 test server mock proto evans swagger swagger-build swagger-run
+.PHONY: sqlc pg-up pg-down migrate-up migrate-up1 migrate-down migrate-down1 test server mock proto evans swagger swagger-build swagger-run redis-up redis-down redis-ping

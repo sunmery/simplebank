@@ -4,15 +4,19 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgconn"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"simple_bank/constants"
 	db "simple_bank/db/sqlc"
 	"simple_bank/pb"
 	"simple_bank/pkg"
 	"simple_bank/validator"
+	"simple_bank/worker"
+	"time"
 )
 
 func (s *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
@@ -27,13 +31,32 @@ func (s *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb
 		return nil, status.Errorf(codes.Internal, "无法获取密码")
 	}
 
-	arg := db.CreateUserParams{
-		Username:       req.GetUsername(),
-		FullName:       req.GetFullName(),
-		HashedPassword: password,
-		Email:          req.GetEmail(),
+	// 将数据库创建用户与用户发送验证邮件的任务绑定, 一起提交或回滚
+	arg := db.CreateUserTxParams{
+		// 创建用户
+		CreateUserParams: db.CreateUserParams{
+			Username:       req.GetUsername(),
+			FullName:       req.GetFullName(),
+			HashedPassword: password,
+			Email:          req.GetEmail(),
+		},
+		// 发送验证邮件
+		// 如果此函数失败则当前事务回滚
+		AfterCreate: func(user db.Users) error {
+			// 发送验证邮件
+			// 创建用户应当与发送邮件任务队列一起成功或者失败, 应使用事务
+			// 否则数据库创建用户成功, 但是异步任务失败, 客户端将收到内部错误, 但无法重试, 因为会创建相同用户名的重复记录
+			taskPayload := &worker.PayloadSendVerifyEmail{Username: user.Username}
+			opts := []asynq.Option{
+				asynq.MaxRetry(10),                   // 最大重试次数
+				asynq.ProcessIn(10 * time.Second),    // 延迟n单位后被处理器接收
+				asynq.Queue(constants.QueueCritical), // 优先级, 例如critical: 关键
+			}
+
+			return s.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
+		},
 	}
-	user, err := s.store.CreateUser(ctx, arg)
+	txResult, err := s.store.CreateUserTx(ctx, arg)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -47,11 +70,11 @@ func (s *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb
 
 	return &pb.CreateUserResponse{
 		User: &pb.User{
-			Username:         user.Username,
-			FullName:         user.FullName,
-			Email:            user.Email,
-			PasswordChangeAt: timestamppb.New(user.PasswordChangedAt),
-			CreateAt:         timestamppb.New(user.CreatedAt),
+			Username:         txResult.User.Username,
+			FullName:         txResult.User.FullName,
+			Email:            txResult.User.Email,
+			PasswordChangeAt: timestamppb.New(txResult.User.PasswordChangedAt),
+			CreateAt:         timestamppb.New(txResult.User.CreatedAt),
 		},
 	}, nil
 }

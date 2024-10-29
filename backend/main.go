@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
 	"os"
+	"simple_bank/worker"
 
 	"net"
 	"net/http"
@@ -25,7 +27,6 @@ import (
 )
 
 func main() {
-
 	cfg, err := config.LoadConfig(".")
 	if err != nil {
 		log.Panic().Err(err).Msg("无法读取环境变量")
@@ -45,15 +46,40 @@ func main() {
 
 	store := db.NewStore(conn)
 
-	go runGatewayServer(cfg, store)
-	runGrpcServer(cfg, store)
+	// 连接redis
+	// 连接redis的参数, 生产请添加TLS与账户密码
+	redisOpt := asynq.RedisClientOpt{
+		Addr: cfg.RedisAddress,
+	}
+	// 创建新的任务分发器
+	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
+
+	// 异步任务处理器
+	go runTaskProcessor(redisOpt, store)
+
+	// 支持http请求的grpc网关
+	go runGatewayServer(cfg, store, taskDistributor)
+	runGrpcServer(cfg, store, taskDistributor)
+
+	// http服务
 	// runGinServer(cfg, store)
 }
 
+// 运行任务处理器
+func runTaskProcessor(redis asynq.RedisClientOpt, store db.Store) {
+	taskProcessor := worker.NewRedisTaskProcessor(redis, store)
+	log.Info().Msg("运行任务处理器")
+
+	err := taskProcessor.Start()
+	if err != nil {
+		log.Fatal().Err(err).Msg("无法启动任务处理器")
+	}
+}
+
 // Grpc服务
-func runGrpcServer(cfg *config.Config, store db.Store) {
+func runGrpcServer(cfg *config.Config, store db.Store, taskDistributor worker.TaskDistributor) {
 	// rpc服务
-	server, err := gapi.NewServer(cfg, store)
+	server, err := gapi.NewServer(cfg, store, taskDistributor)
 	if err != nil {
 		log.Error().Err(err)
 	}
@@ -82,9 +108,9 @@ func runGrpcServer(cfg *config.Config, store db.Store) {
 }
 
 // Gateway服务. 编写grpc服务, 可以接收客户端的HTTP请求. 在进程内翻译grpc为http的响应并返回
-func runGatewayServer(cfg *config.Config, store db.Store) {
+func runGatewayServer(cfg *config.Config, store db.Store, taskDistributor worker.TaskDistributor) {
 	// rpc服务
-	server, err := gapi.NewServer(cfg, store)
+	server, err := gapi.NewServer(cfg, store, taskDistributor)
 	if err != nil {
 		log.Error().Err(err)
 	}
