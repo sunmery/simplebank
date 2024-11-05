@@ -6,12 +6,16 @@ sqlc:
 
 # 启动postgres容器
 pg-up:
-	make migrate-up
 	docker compose -f manifests/database/docker/docker-compose.yaml up -d
 
 # 停止postgres容器
 pg-down:
 	docker compose -f manifests/database/docker/docker-compose.yaml down
+
+# 生成迁移文件
+# 使用: make new-migrate name=verify_emails
+new-migrate:
+	migrate create -dir db/migrate -ext sql -seq $(name)
 
 # 升级全部的迁移文件, 先安装https://github.com/golang-migrate/migrate/tree/master
 migrate-up:
@@ -92,4 +96,4 @@ server:
 	make swagger
 	go run .
 
-.PHONY: sqlc pg-up pg-down migrate-up migrate-up1 migrate-down migrate-down1 test server mock proto evans swagger swagger-build swagger-run redis-up redis-down redis-ping
+.PHONY: sqlc pg-up pg-down migrate-up migrate-up1 migrate-down migrate-down1 test server mock proto evans swagger swagger-build swagger-run redis-up redis-down redis-ping new-migrate

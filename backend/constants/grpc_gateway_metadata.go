@@ -1,6 +1,6 @@
 package constants
 
 const (
-	GRPCGATEWAYUSERAGENT = "grpcgateway-user-agent"
-	XFORWARDEDFOR        = "x-forwarded-for"
+	GrpcGatewayUserAgent = "grpcgateway-user-agent"
+	XForwardedFor        = "x-forwarded-for"
 )
