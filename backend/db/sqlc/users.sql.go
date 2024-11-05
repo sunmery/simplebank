@@ -12,7 +12,7 @@ import (
 const CreateUser = `-- name: CreateUser :one
 INSERT INTO users (username, full_name, hashed_password, email)
 VALUES ($1, $2, $3, $4)
-RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at
+RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at, is_email_verified
 `
 
 type CreateUserParams struct {
@@ -26,7 +26,7 @@ type CreateUserParams struct {
 //
 //	INSERT INTO users (username, full_name, hashed_password, email)
 //	VALUES ($1, $2, $3, $4)
-//	RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at
+//	RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at, is_email_verified
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, error) {
 	row := q.db.QueryRow(ctx, CreateUser,
 		arg.Username,
@@ -43,12 +43,13 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (Users, 
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsEmailVerified,
 	)
 	return i, err
 }
 
 const GetUser = `-- name: GetUser :one
-SELECT username, full_name, hashed_password, email, password_changed_at, created_at, updated_at
+SELECT username, full_name, hashed_password, email, password_changed_at, created_at, updated_at, is_email_verified
 FROM users
 WHERE username = $1
 LIMIT 1
@@ -56,7 +57,7 @@ LIMIT 1
 
 // GetUser
 //
-//	SELECT username, full_name, hashed_password, email, password_changed_at, created_at, updated_at
+//	SELECT username, full_name, hashed_password, email, password_changed_at, created_at, updated_at, is_email_verified
 //	FROM users
 //	WHERE username = $1
 //	LIMIT 1
@@ -71,6 +72,7 @@ func (q *Queries) GetUser(ctx context.Context, username string) (Users, error) {
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsEmailVerified,
 	)
 	return i, err
 }
@@ -81,16 +83,18 @@ SET
      username = coalesce($1, username),
      full_name = coalesce($2, full_name),
      hashed_password = coalesce($3, hashed_password),
-     email = coalesce($4, email)
+     email = coalesce($4, email),
+     is_email_verified = coalesce($5, is_email_verified)
 WHERE username = $1
-RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at
+RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at, is_email_verified
 `
 
 type UpdateUserParams struct {
-	Username       *string `json:"username"`
-	FullName       *string `json:"fullName"`
-	HashedPassword *string `json:"hashedPassword"`
-	Email          *string `json:"email"`
+	Username        *string `json:"username"`
+	FullName        *string `json:"fullName"`
+	HashedPassword  *string `json:"hashedPassword"`
+	Email           *string `json:"email"`
+	IsEmailVerified *bool   `json:"isEmailVerified"`
 }
 
 // UpdateUser
@@ -100,15 +104,17 @@ type UpdateUserParams struct {
 //	     username = coalesce($1, username),
 //	     full_name = coalesce($2, full_name),
 //	     hashed_password = coalesce($3, hashed_password),
-//	     email = coalesce($4, email)
+//	     email = coalesce($4, email),
+//	     is_email_verified = coalesce($5, is_email_verified)
 //	WHERE username = $1
-//	RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at
+//	RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at, is_email_verified
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, error) {
 	row := q.db.QueryRow(ctx, UpdateUser,
 		arg.Username,
 		arg.FullName,
 		arg.HashedPassword,
 		arg.Email,
+		arg.IsEmailVerified,
 	)
 	var i Users
 	err := row.Scan(
@@ -119,6 +125,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, 
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsEmailVerified,
 	)
 	return i, err
 }

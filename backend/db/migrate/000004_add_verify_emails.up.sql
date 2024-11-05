@@ -18,4 +18,4 @@ alter table "verify_emails"
 -- 在用户表添加是否以验证邮件的列
 alter table "users"
     add
-        column is_verify_email bool DEFAULT false NOT NULL;
+        column is_email_verified bool DEFAULT false NOT NULL;

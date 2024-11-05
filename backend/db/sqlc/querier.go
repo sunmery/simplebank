@@ -46,8 +46,14 @@ type Querier interface {
 	//
 	//  INSERT INTO users (username, full_name, hashed_password, email)
 	//  VALUES ($1, $2, $3, $4)
-	//  RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at
+	//  RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at, is_email_verified
 	CreateUser(ctx context.Context, arg CreateUserParams) (Users, error)
+	//CreateVerifyEmail
+	//
+	//  INSERT INTO verify_emails(username, email, secret_code)
+	//  VALUES ($1, $2, $3)
+	//  RETURNING id, username, email, secret_code, is_used, created_at, expired_at
+	CreateVerifyEmail(ctx context.Context, arg CreateVerifyEmailParams) (VerifyEmails, error)
 	//DeleteAccount
 	//
 	//  DELETE
@@ -91,7 +97,7 @@ type Querier interface {
 	GetTransfer(ctx context.Context, id int64) (Transfers, error)
 	//GetUser
 	//
-	//  SELECT username, full_name, hashed_password, email, password_changed_at, created_at, updated_at
+	//  SELECT username, full_name, hashed_password, email, password_changed_at, created_at, updated_at, is_email_verified
 	//  FROM users
 	//  WHERE username = $1
 	//  LIMIT 1
@@ -135,10 +141,22 @@ type Querier interface {
 	//       username = coalesce($1, username),
 	//       full_name = coalesce($2, full_name),
 	//       hashed_password = coalesce($3, hashed_password),
-	//       email = coalesce($4, email)
+	//       email = coalesce($4, email),
+	//       is_email_verified = coalesce($5, is_email_verified)
 	//  WHERE username = $1
-	//  RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at
+	//  RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at, is_email_verified
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, error)
+	// 更新is_used为已使用(TRUE),
+	// 条件是一次性密码(secret_code)相同且没有使用过(is_used = FALSE)和在有效期内(expired_at > now())
+	//
+	//  UPDATE verify_emails
+	//  SET is_used = TRUE
+	//  WHERE id = $1
+	//    AND secret_code = $2
+	//    AND is_used = FALSE
+	//    AND expired_at > now()
+	//  RETURNING id, username, email, secret_code, is_used, created_at, expired_at
+	UpdateVerifyEmail(ctx context.Context, arg UpdateVerifyEmailParams) (VerifyEmails, error)
 }
 
 var _ Querier = (*Queries)(nil)

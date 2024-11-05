@@ -53,4 +53,15 @@ type Users struct {
 	PasswordChangedAt time.Time `json:"passwordChangedAt"`
 	CreatedAt         time.Time `json:"createdAt"`
 	UpdatedAt         time.Time `json:"updatedAt"`
+	IsEmailVerified   bool      `json:"isEmailVerified"`
+}
+
+type VerifyEmails struct {
+	ID         int64     `json:"id"`
+	Username   string    `json:"username"`
+	Email      string    `json:"email"`
+	SecretCode string    `json:"secretCode"`
+	IsUsed     bool      `json:"isUsed"`
+	CreatedAt  time.Time `json:"createdAt"`
+	ExpiredAt  time.Time `json:"expiredAt"`
 }

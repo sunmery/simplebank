@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-// File overview 文件概述
+// 创建用户
 
 package simple_bank;
 

@@ -15,7 +15,7 @@ import (
 type Server struct {
 	// 提供所有的函数调用,但是返回错误, 主要为了向前兼容
 	// 可以并行处理多个RPC,而不会互相阻塞
-	pb.UnimplementedCreateUserServiceServer
+	pb.UnimplementedUserServiceServer
 	config          *config.Config
 	store           db.Store
 	tokenMake       token.Maker

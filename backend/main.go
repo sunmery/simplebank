@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
 	"os"
+	"simple_bank/mail"
 	"simple_bank/worker"
 
 	"net"
@@ -55,7 +56,7 @@ func main() {
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 
 	// 异步任务处理器
-	go runTaskProcessor(redisOpt, store)
+	go runTaskProcessor(cfg, redisOpt, store)
 
 	// 支持http请求的grpc网关
 	go runGatewayServer(cfg, store, taskDistributor)
@@ -66,8 +67,9 @@ func main() {
 }
 
 // 运行任务处理器
-func runTaskProcessor(redis asynq.RedisClientOpt, store db.Store) {
-	taskProcessor := worker.NewRedisTaskProcessor(redis, store)
+func runTaskProcessor(conf *config.Config, redis asynq.RedisClientOpt, store db.Store) {
+	mailer := mail.NewGMailSender(conf.EmailSenderName, conf.EmailSenderAddress, conf.EmailSenderPassword)
+	taskProcessor := worker.NewRedisTaskProcessor(mailer, redis, store)
 	log.Info().Msg("运行任务处理器")
 
 	err := taskProcessor.Start()
@@ -89,7 +91,7 @@ func runGrpcServer(cfg *config.Config, store db.Store, taskDistributor worker.Ta
 
 	// 创建grpc服务实例
 	grpcServer := grpc.NewServer(grpcLogger)
-	pb.RegisterCreateUserServiceServer(grpcServer, server)
+	pb.RegisterUserServiceServer(grpcServer, server)
 	reflection.Register(grpcServer)
 
 	// 监听端口
@@ -130,7 +132,7 @@ func runGatewayServer(cfg *config.Config, store db.Store, taskDistributor worker
 	defer cancel()
 
 	// 调用grpc-gateway生成的注册服务
-	err = pb.RegisterCreateUserServiceHandlerServer(ctx, grpcMux, server)
+	err = pb.RegisterUserServiceHandlerServer(ctx, grpcMux, server)
 	if err != nil {
 		log.Error().Err(err)
 	}

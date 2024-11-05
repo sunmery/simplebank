@@ -68,3 +68,14 @@ func ValidateEmail(value string) error {
 	}
 	return nil
 }
+
+func ValidateEmailId(value int64) error {
+	if value <= 0 {
+		return fmt.Errorf("email_id必须是正整数")
+	}
+	return nil
+}
+
+func ValidateEmailSecretCode(value string) error {
+	return validateString(value, 32, 128)
+}

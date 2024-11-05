@@ -2,12 +2,11 @@ package worker
 
 import (
 	"context"
-	"database/sql"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
+	"simple_bank/mail"
+
 	"simple_bank/constants"
 
 	db "simple_bank/db/sqlc"
@@ -26,10 +25,11 @@ type TaskProcessor interface {
 type RedisTaskProcessor struct {
 	Server *asynq.Server
 	Store  db.Store
+	mailer mail.EmailSender
 }
 
 // NewRedisTaskProcessor 任务处理器实例
-func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) TaskProcessor {
+func NewRedisTaskProcessor(mailer mail.EmailSender, redisOpt asynq.RedisClientOpt, store db.Store) TaskProcessor {
 	server := asynq.NewServer(redisOpt, asynq.Config{
 		// 队列优先级
 		Queues: map[string]int{
@@ -51,6 +51,7 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) TaskPr
 	return &RedisTaskProcessor{
 		Server: server,
 		Store:  store,
+		mailer: mailer,
 	}
 }
 
@@ -64,34 +65,5 @@ func (processor *RedisTaskProcessor) Start() error {
 	if err != nil {
 		return fmt.Errorf("start server: %w", err)
 	}
-	return nil
-}
-
-// ProcessTaskVerifyEmail 处理验证邮件
-// asynq已经处理了redis中拉取任务部分,并通过此处理函数的任务参数将其提供给后台的worker进行处理
-func (processor *RedisTaskProcessor) ProcessTaskVerifyEmail(ctx context.Context, task *asynq.Task) error {
-	// 解析任务并获取其有效负载
-	var payload PayloadSendVerifyEmail
-	err := json.Unmarshal(task.Payload(), &payload)
-	if err != nil {
-		return fmt.Errorf("unmarshal payload verify email payload: %w", err)
-	}
-
-	// 查询用户
-	user, err := processor.Store.GetUser(ctx, payload.Username)
-	if err != nil {
-		// 如果查不到此用户, 那么跳过 重试任务
-		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("user not found %w", asynq.SkipRetry)
-		}
-		return fmt.Errorf("get user: %w", err)
-	}
-	// TODO: send email to user
-	log.Info().
-		Str("type", task.Type()).
-		Bytes("payload", task.Payload()).
-		Str("email", user.Email).
-		Msg("任务已处理")
-
 	return nil
 }

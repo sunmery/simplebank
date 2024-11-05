@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "title": "Simple bank API",
-    "version": "0.2",
+    "version": "0.3",
     "contact": {
       "name": "Mandala",
       "url": "https://github.com/sunmery/simplebank",
@@ -16,7 +16,7 @@
   },
   "tags": [
     {
-      "name": "CreateUserService"
+      "name": "UserService"
     }
   ],
   "consumes": [
@@ -28,7 +28,9 @@
   "paths": {
     "/v1/create_user": {
       "put": {
-        "operationId": "CreateUserService_CreateUser",
+        "summary": "创建用户",
+        "description": "使用此API创建用户",
+        "operationId": "UserService_CreateUser",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -54,13 +56,15 @@
           }
         ],
         "tags": [
-          "CreateUserService"
+          "UserService"
         ]
       }
     },
     "/v1/login_user": {
       "post": {
-        "operationId": "CreateUserService_LoginUser",
+        "summary": "用户登录",
+        "description": "使用此API用户登录",
+        "operationId": "UserService_LoginUser",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -86,13 +90,15 @@
           }
         ],
         "tags": [
-          "CreateUserService"
+          "UserService"
         ]
       }
     },
     "/v1/update_user": {
       "patch": {
-        "operationId": "CreateUserService_UpdateUser",
+        "summary": "更新用户",
+        "description": "使用此API更新用户",
+        "operationId": "UserService_UpdateUser",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -118,7 +124,46 @@
           }
         ],
         "tags": [
-          "CreateUserService"
+          "UserService"
+        ]
+      }
+    },
+    "/v1/verify_email": {
+      "get": {
+        "summary": "验证电子邮件",
+        "description": "使用此API验证用户邮件",
+        "operationId": "UserService_VerifyEmail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/simple_bank.VerifyEmailResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "emailId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "secretCode",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
         ]
       }
     }
@@ -261,6 +306,14 @@
         "createAt": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "simple_bank.VerifyEmailResponse": {
+      "type": "object",
+      "properties": {
+        "isVerified": {
+          "type": "boolean"
         }
       }
     }
