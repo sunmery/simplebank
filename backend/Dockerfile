@@ -81,7 +81,7 @@ CMD ["/bin/main"]
 
 # 构建Docker所属的当前平台与架构的二进制文件, 进到当前的backend目录
 # VERSION=dev
-# REPOSITORY="lisa/backend"
+# REPOSITORY="team/backend"
 # Docker 容器在 Linux 内核上运行，即便是在 macOS 或 Windows 环境中。
 # 如果使用docker构建时传递 GOOS=darwin 会导致构建的二进制文件不兼容于 Linux 环境，从而出现 exec format error
 # 所以在使用docker构建时的目标平台的GOOS应该为 linux，而非 darwin。
@@ -99,7 +99,7 @@ CMD ["/bin/main"]
 # 构建多架构的二进制文件, 需要在Docker Desktop 启用 containerd 映像存储
 # https://docs.docker.com/desktop/containerd/#enable-the-containerd-image-store
 # VERSION=dev
-# REPOSITORY="lisa/backend"
+# REPOSITORY="team/backend"
 # GOOS=linux
 # GOARCH=amd64
 # HTTP_PORT=30001
