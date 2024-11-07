@@ -93,10 +93,10 @@ jobs:
       - name: Run database migrate
         run: |
           make migrate-up
-
-      - name: Test
-        run: |
-          make test
+      -
+        # -short: 跳过耗时久的test
+        name: Go test
+        run: go test -short ./...
 
   backend-build:
     needs: backend-test

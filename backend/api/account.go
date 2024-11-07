@@ -42,12 +42,12 @@ func (s *Server) createAccount(ctx *gin.Context) {
 			fmt.Printf("postgres sql err code is '%s' \n", pgErr.Code)
 
 			switch pgErr.Code {
-			case "23503":
+			case constants.ForeignKeyViolation:
 				ctx.JSON(http.StatusForbidden, gin.H{
 					"error": pgErr.Error(),
 				})
 				return
-			case "23505":
+			case constants.UniqueViolation:
 				ctx.JSON(http.StatusForbidden, gin.H{
 					"error": pgErr.Error(),
 				})

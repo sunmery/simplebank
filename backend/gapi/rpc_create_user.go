@@ -61,10 +61,17 @@ func (s *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
-			case "23505":
+			case constants.UniqueViolation:
 				return nil, status.Errorf(codes.AlreadyExists, "用户名已存在 %s", err)
 			}
 		}
+		// if pqErr, ok := err.(*pq.Error); ok {
+		// 	switch pqErr.Code.Name() {
+		// 	case "unique_violation":
+		// 		return nil, status.Errorf(codes.AlreadyExists, "用户名已存在 %s", err)
+		// 	}
+		// }
+
 		return nil, status.Errorf(codes.Internal, "未知错误 %s", err)
 	}
 

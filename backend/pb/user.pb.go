@@ -4,7 +4,7 @@
 // 	protoc        v5.27.2
 // source: user.proto
 
-// File overview 文件概述
+// 用户参数
 
 package pb
 

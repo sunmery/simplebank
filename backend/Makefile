@@ -4,13 +4,13 @@
 sqlc:
 	sqlc generate
 
-# 启动postgres容器
-pg-up:
-	docker compose -f manifests/database/docker/docker-compose.yaml up -d
+# 启动postgres和redis容器
+dev-up:
+	docker compose -f compose-dev.yaml up -d
 
-# 停止postgres容器
-pg-down:
-	docker compose -f manifests/database/docker/docker-compose.yaml down
+# 停止postgres和redis容器
+dev-down:
+	docker compose -f compose-dev.yaml down
 
 # 生成迁移文件
 # 使用: make new-migrate name=verify_emails
@@ -51,8 +51,13 @@ test:
 	go test -v -cover ./...
 
 # Mock DB
+# -package 包名
+# -destination 包含生成的mock文件位置
+# simple_bank/worker TaskDistributor
+# 最后参数: 包路径与要生成的interface接口的名称
 mock:
 	mockgen -package mockdb -destination db/mock/store.go simple_bank/db/sqlc Store
+	mockgen -package mockwk -destination worker/mock/distrbutor.go simple_bank/worker TaskDistributor
 
 # 生成proto的go代码
 proto:
@@ -96,4 +101,4 @@ server:
 	make swagger
 	go run .
 
-.PHONY: sqlc pg-up pg-down migrate-up migrate-up1 migrate-down migrate-down1 test server mock proto evans swagger swagger-build swagger-run redis-up redis-down redis-ping new-migrate
+.PHONY: sqlc dev-up dev-down migrate-up migrate-up1 migrate-down migrate-down1 test server mock proto evans swagger swagger-build swagger-run redis-up redis-down redis-ping new-migrate

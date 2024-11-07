@@ -40,7 +40,7 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 };
 
 service UserService {
-	rpc CreateUser(CreateUserRequest) returns (CreateUserResponse){
+	rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
 		option (google.api.http) = {
 			put: "/v1/create_user"
 			body: "*"
@@ -50,7 +50,7 @@ service UserService {
 			summary: "创建用户"
 		};
 	}
-	rpc LoginUser(LoginUserRequest) returns (LoginUserResponse){
+	rpc LoginUser(LoginUserRequest) returns (LoginUserResponse) {
 		option (google.api.http) = {
 			post: "/v1/login_user"
 			body: "*"

@@ -13,7 +13,7 @@ namePrefix: prod-
 # 修改或添加的配置
 patches:
 - path: replica_count.yaml
-# - path: limits.yaml
+- path: limits.yaml
 - path: add-env.yaml
 
 images:

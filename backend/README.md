@@ -1,5 +1,9 @@
 ## Simple Bank
 
+### 错误处理
+
+postgres错误码对照表: http://www.postgres.cn/docs/9.4/errcodes-appendix.html
+
 ### 发送电子邮件
 https://www.nodeseek.com/post-183150-1
 
@@ -312,3 +316,5 @@ func (s *Server) VerifyEmail(ctx context.Context, req *pb.VerifyEmailRequest) (*
 	}, nil
 }
 ```
+
+编写测试
