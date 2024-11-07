@@ -1,6 +1,6 @@
 module simple_bank
 
-go 1.23.0
+go 1.23.3
 
 require (
 	github.com/gin-gonic/gin v1.10.0
@@ -11,7 +11,6 @@ require (
 	github.com/hibiken/asynq v0.24.1
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
-	github.com/lib/pq v1.10.9
 	github.com/o1egl/paseto v1.0.0
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/viper v1.19.0

@@ -32,6 +32,8 @@ func main() {
 	if err != nil {
 		log.Panic().Err(err).Msg("无法读取环境变量")
 	}
+	log.Info().Str("DB_SOURCE", cfg.DBSource)
+	log.Info().Str("RedisAddress", cfg.RedisAddress)
 	// 开发模式启用人类更容易阅读的日志格式
 	// 生产模式启用JSON包裹的日志以导出到日志存储后端
 	switch cfg.ENVIRONMENT {

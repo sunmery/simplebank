@@ -1,5 +1,11 @@
 ## Simple Bank
 
+### 构建时注意事项
+1. alpine镜像不内置gcc, 关闭CGO很有效
+2. Docker 容器在 Linux 内核上运行，即便是在 macOS 或 Windows 环境中。
+如果使用docker构建时传递 GOOS=darwin 会导致构建的二进制文件不兼容于 Linux 环境，从而出现 exec format error
+所以在使用docker构建时的目标平台的GOOS应该为 linux，而非 darwin。
+
 ### 错误处理
 
 postgres错误码对照表: http://www.postgres.cn/docs/9.4/errcodes-appendix.html

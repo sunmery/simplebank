@@ -22,6 +22,7 @@ import (
 type MockTaskDistributor struct {
 	ctrl     *gomock.Controller
 	recorder *MockTaskDistributorMockRecorder
+	isgomock struct{}
 }
 
 // MockTaskDistributorMockRecorder is the mock recorder for MockTaskDistributor.
@@ -42,10 +43,10 @@ func (m *MockTaskDistributor) EXPECT() *MockTaskDistributorMockRecorder {
 }
 
 // DistributeTaskSendVerifyEmail mocks base method.
-func (m *MockTaskDistributor) DistributeTaskSendVerifyEmail(arg0 context.Context, arg1 *worker.PayloadSendVerifyEmail, arg2 ...asynq.Option) error {
+func (m *MockTaskDistributor) DistributeTaskSendVerifyEmail(ctx context.Context, payload *worker.PayloadSendVerifyEmail, opt ...asynq.Option) error {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1}
-	for _, a := range arg2 {
+	varargs := []any{ctx, payload}
+	for _, a := range opt {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "DistributeTaskSendVerifyEmail", varargs...)
@@ -54,8 +55,8 @@ func (m *MockTaskDistributor) DistributeTaskSendVerifyEmail(arg0 context.Context
 }
 
 // DistributeTaskSendVerifyEmail indicates an expected call of DistributeTaskSendVerifyEmail.
-func (mr *MockTaskDistributorMockRecorder) DistributeTaskSendVerifyEmail(arg0, arg1 any, arg2 ...any) *gomock.Call {
+func (mr *MockTaskDistributorMockRecorder) DistributeTaskSendVerifyEmail(ctx, payload any, opt ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1}, arg2...)
+	varargs := append([]any{ctx, payload}, opt...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DistributeTaskSendVerifyEmail", reflect.TypeOf((*MockTaskDistributor)(nil).DistributeTaskSendVerifyEmail), varargs...)
 }

@@ -6,11 +6,11 @@ sqlc:
 
 # 启动postgres和redis容器
 dev-up:
-	docker compose -f compose-dev.yaml up -d
+	docker compose -f compose-dev.yml up -d
 
 # 停止postgres和redis容器
 dev-down:
-	docker compose -f compose-dev.yaml down
+	docker compose -f compose-dev.yml down
 
 # 生成迁移文件
 # 使用: make new-migrate name=verify_emails

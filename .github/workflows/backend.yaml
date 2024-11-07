@@ -19,7 +19,7 @@ env:
   # 目标的架构
   GOARCH: amd64
   # golang的镜像
-  GO_IMAGE: golang:1.23.1-alpine3.20
+  GO_IMAGE: golang:1.23.3-alpine3.20
   # golang环境变量
   CGO_ENABLED: 0
   # 等待部署完成的超时时间, 超时即为失败

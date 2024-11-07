@@ -2,7 +2,7 @@
 # https://docs.docker.com/go/dockerfile-reference/
 
 # 定义基础镜像的 Golang 版本
-ARG GOIMAGE=golang:1.23.1-alpine3.20
+ARG GOIMAGE=golang:1.23.3-alpine3.20
 
 FROM --platform=$BUILDPLATFORM ${GOIMAGE} AS build
 WORKDIR /src
@@ -32,8 +32,6 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
     go mod download -x
 
 # 获取代码版本号，用于编译时标记二进制文件
-RUN echo "$a: $GOOS $GOARCH $CGOENABLED"
-RUN VERSION=$(git describe --tags --always) || true
 RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \
     GOOS=$GOOS \
@@ -61,14 +59,15 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositorie
 # RUN --mount=type=cache,target=/var/cache/apk \
 #    apk --update add ca-certificates tzdata && update-ca-certificates
 
-# 创建一个非特权用户来运行应用，增强容器安全性
-RUN adduser --disabled-password --gecos "" --home "/nonexistent" --shell "/sbin/nologin" --no-create-home --uid "${UID}" appuser
+# RUN chmod 1777 /tmp
+# # 创建一个非特权用户来运行应用，增强容器安全性
+# RUN adduser --disabled-password --gecos "" --home "/nonexistent" --shell "/sbin/nologin" --no-create-home --uid "${UID}" appuser
 
 # 设置时区为上海
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN echo 'Asia/Shanghai' >/etc/timezone
 
-USER appuser
+# USER appuser
 
 # 复制配置文件
 COPY app.env .
@@ -81,52 +80,53 @@ EXPOSE $GRPC_PORT
 CMD ["/bin/main"]
 
 # 构建Docker所属的当前平台与架构的二进制文件, 进到当前的backend目录
-# export VERSION=v2.0.0
-# export REPOSITORY="lisa/backend"
-# export GOOS=linux
-# export GOARCH=amd64
-# export HTTP_PORT=30001
-# export GRPC_PORT=30002
+# VERSION=dev
+# REPOSITORY="lisa/backend"
+# Docker 容器在 Linux 内核上运行，即便是在 macOS 或 Windows 环境中。
+# 如果使用docker构建时传递 GOOS=darwin 会导致构建的二进制文件不兼容于 Linux 环境，从而出现 exec format error
+# 所以在使用docker构建时的目标平台的GOOS应该为 linux，而非 darwin。
 # docker build . \
 #   --progress=plain \
-#   -t $REPOSITORY:$VERSION \
+#   -t dev/app:dev \
 #   --build-arg CGOENABLED=0 \
-#   --build-arg GOIMAGE=golang:1.23.1-alpine3.20 \
-#   --build-arg GOOS=$GOOS \
-#   --build-arg GOARCH=$GOARCH \
+#   --build-arg GOIMAGE=golang:1.23.3-alpine3.20 \
+#   --build-arg GOOS=linux \
+#   --build-arg GOARCH=arm64 \
 #   --build-arg VERSION=$VERSION \
-#   --build-arg HTTP_PORT=$HTTP_PORT
-#   --build-arg GRPC_PORT=$GRPC_PORT
-#   --load
+#   --build-arg HTTP_PORT=30001 \
+#   --build-arg GRPC_PORT=30002
 
 # 构建多架构的二进制文件, 需要在Docker Desktop 启用 containerd 映像存储
 # https://docs.docker.com/desktop/containerd/#enable-the-containerd-image-store
-# export VERSION=v2.0.0
-# export REPOSITORY="lisa/backend"
-# export GOOS=linux
-# export GOARCH=amd64
-# export HTTP_PORT=30001
-# export GRPC_PORT=30002
+# VERSION=dev
+# REPOSITORY="lisa/backend"
+# GOOS=linux
+# GOARCH=amd64
+# HTTP_PORT=30001
+# GRPC_PORT=30002
+# PLATFORM_1=linux/arm64
+# PLATFORM_2=linux/amd64
 # docker buildx build . \
 #   --progress=plain \
 #   -t $REPOSITORY:$VERSION \
 #   --build-arg CGOENABLED=0 \
-#   --build-arg GOIMAGE=golang:1.23.1-alpine3.20 \
+#   --build-arg GOIMAGE=golang:1.23.3-alpine3.20 \
 #   --build-arg VERSION=$VERSION \
 #   --build-arg HTTP_PORT=$PORT \
 #   --build-arg GRPC_PORT=$PORT \
 #   --build-arg GOOS=$GOOS \
 #   --build-arg GOARCH=$GOARCH \
-#   --platform $GOOS/$GOARCH
+#   --platform $PLATFORM_1,$PLATFORM_2 \
+#   --load
 
 # 推送
-# export register="ccr.ccs.tencentyun.com"
+# register="ccr.ccs.tencentyun.com"
 # docker tag $REPOSITORY:$VERSION $register/$REPOSITORY:$VERSION
 # docker push $register/$REPOSITORY:$VERSION
 
 # 拉取
-# export GOOS=linux
-# export GOARCH=amd64
+# GOOS=linux
+# GOARCH=amd64
 # docker pull $register/$REPOSITORY:$VERSION --platform $GOOS/GOARCH
 
 # 运行
@@ -135,5 +135,5 @@ CMD ["/bin/main"]
 # -p 30001:30001 \
 # -p 30002:30002 \
 # -e GIN_MODE=release \
-# -e DB_SOURCE="postgresql://postgres:postgres@159.75.231.54:5432/simple_bank?sslmode=disable" \
-# $register/container:$VERSION
+# -e DB_SOURCE="postgresql://postgres:postgres@localhost:5432/simple_bank?sslmode=disable" \
+# $REPOSITORY:$VERSION
