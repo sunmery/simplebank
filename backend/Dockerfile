@@ -73,8 +73,7 @@ RUN echo 'Asia/Shanghai' >/etc/timezone
 COPY app.env .
 
 # 指定容器对外暴露的端口号
-EXPOSE $HTTP_PORT
-EXPOSE $GRPC_PORT
+EXPOSE $HTTP_PORT $GRPC_PORT
 
 # 设置容器启动时执行的命令
 CMD ["/bin/main"]

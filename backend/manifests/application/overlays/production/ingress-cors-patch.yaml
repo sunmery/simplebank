@@ -1,0 +1,13 @@
+# base/ingress-cors-patch.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: simple-bank-svc-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://web.api-r.com"  # 指定允许的域名
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, PATCH, DELETE"  # 允许的请求方法
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization"  # 允许的请求Header
+    nginx.ingress.kubernetes.io/cors-expose-headers: "Content-Length, X-Kuma-Revision"  # 可选：允许暴露的响应Header
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"  # 可选：是否允许携带凭证信息
+    nginx.ingress.kubernetes.io/cors-max-age: "86400"  # 可选：预检请求缓存时间，单位秒

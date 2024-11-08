@@ -4,29 +4,22 @@ metadata:
   name: simple-bank-svc-ingress
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
 spec:
   ingressClassName: higress
   rules:
-    - host: "svc.api-r.com"
+    - host: "grpc.api-r.com"
     - http:
         paths:
-          - path: /v1/*
-            pathType: Prefix
-            backend:
-              service:
-                name: api-simple-bank-service
-                port:
-                  number: 30002
-
           - path: /
             pathType: Prefix
             backend:
               service:
                 name: api-simple-bank-service
                 port:
-                  number: 30001
-
+                  number: 443
   tls:
     - hosts:
-        - svc.api-r.com
-      secretName: api-r-com-secret
+        - grpc.api-r.com
+      secretName: api-r-com-grpc-secret

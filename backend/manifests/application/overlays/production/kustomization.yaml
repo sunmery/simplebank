@@ -15,6 +15,7 @@ patches:
 - path: replica_count.yaml
 - path: limits.yaml
 - path: add-env.yaml
+- path: ingress-cors-patch.yaml
 
 # 密钥字段
 #secretGenerator:
