@@ -5,7 +5,8 @@ resources:
   - namespace.yaml
   - deployment.yaml
   - service.yaml
-  - ingress.yaml
+  - ingress-http.yaml
+  - ingress-grpc.yaml
 
 # 命名空间
 namespace: bank
