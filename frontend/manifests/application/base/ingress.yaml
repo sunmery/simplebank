@@ -19,7 +19,7 @@ spec:
                 port:
                   number: 443
 
-  tls:
-    - hosts:
-        - web.api-r.com
-      secretName: api-r-com-secret
+  # tls:
+  #   - hosts:
+  #       - web.api-r.com
+  #     secretName: api-r-com-secret

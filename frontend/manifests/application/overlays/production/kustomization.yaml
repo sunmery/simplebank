@@ -15,6 +15,7 @@ patches:
 - path: replica_count.yaml
 - path: limits.yaml
 - path: add-env.yaml
+- path: ingress-http-cors-patch.yaml
 
 images:
 - name: example

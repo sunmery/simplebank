@@ -21,4 +21,4 @@ spec:
       targetPort: 8443
       protocol: UDP
       nodePort: 30005
-  type: NodePort
+  type: ClusterIP
