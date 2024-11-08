@@ -1,9 +1,9 @@
+# base/ingress-cors-patch.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: simple-bank-http-ingress
+  name: simple-bank-grpc-ingress
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "https://web.api-r.com"
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, PATCH, DELETE"
@@ -11,21 +11,3 @@ metadata:
     nginx.ingress.kubernetes.io/cors-expose-headers: "Content-Length, X-Kuma-Revision"
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
     nginx.ingress.kubernetes.io/cors-max-age: "86400"
-spec:
-  ingressClassName: higress
-  rules:
-    - host: "http.api-r.com"
-    - http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: api-simple-bank-service
-                port:
-                  number: 80
-
-  tls:
-    - hosts:
-        - http.api-r.com
-      secretName: api-r-com-http-secret
