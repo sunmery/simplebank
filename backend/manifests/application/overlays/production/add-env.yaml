@@ -15,3 +15,8 @@ spec:
                 secretKeyRef:
                   key: DB_SOURCE
                   name: db-source-secret
+            - name: REDIS_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  key: REDIS_ADDRESS
+                  name: redis-address-secret

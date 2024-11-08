@@ -52,7 +52,8 @@ func main() {
 	// 连接redis
 	// 连接redis的参数, 生产请添加TLS与账户密码
 	redisOpt := asynq.RedisClientOpt{
-		Addr: cfg.RedisAddress,
+		Addr:     cfg.RedisAddress,
+		Password: cfg.RedisPassword,
 	}
 	// 创建新的任务分发器
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
