@@ -20,3 +20,13 @@ spec:
                 secretKeyRef:
                   key: REDIS_ADDRESS
                   name: redis-address-secret
+            - name: REDIS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: REDIS_USERNAME
+                  name: redis-username-secret
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: REDIS_PASSWORD
+                  name: redis-password-secret

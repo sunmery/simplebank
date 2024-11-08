@@ -205,6 +205,10 @@ jobs:
           
           ./Kubectl delete secret redis-address-secret || true
           ./kubectl create secret generic redis-address-secret --from-literal='REDIS_ADDRESS=${{ secrets.REDIS_ADDRESS }}'
+          ./Kubectl delete secret redis-username-secret || true
+          ./kubectl create secret generic redis-username-secret --from-literal='REDIS_USERNAME=${{ secrets.REDIS_USERNAME }}'
+          ./Kubectl delete secret redis-password-secret || true
+          ./kubectl create secret generic redis-password-secret --from-literal='REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}'
           
           ./kustomize edit set image example=${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$VERSION
           ./kustomize build . | kubectl apply -f -

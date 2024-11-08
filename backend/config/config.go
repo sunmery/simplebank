@@ -11,6 +11,7 @@ type Config struct {
 	ENVIRONMENT          string        `mapstructure:"ENVIRONMENT"`
 	DBSource             string        `mapstructure:"DB_SOURCE"`
 	RedisAddress         string        `mapstructure:"REDIS_ADDRESS"`
+	RedisUsername        string        `mapstructure:"REDIS_USERNAME"`
 	RedisPassword        string        `mapstructure:"REDIS_PASSWORD"`
 	HTTPServerAddress    string        `mapstructure:"HTTP_SEVER_ADDRESS"`
 	GRPCServerAddress    string        `mapstructure:"GRPC_SEVER_ADDRESS"`
