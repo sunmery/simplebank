@@ -92,7 +92,7 @@ jobs:
 
       - name: Run database migrate
         run: |
-          DB_SOURCE={{secrets.DB_SOURCE}}
+          DB_SOURCE=${{secrets.DB_SOURCE}}
           make migrate-up
       -
         # -short: 跳过耗时久的test
