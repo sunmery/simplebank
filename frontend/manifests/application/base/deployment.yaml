@@ -21,12 +21,12 @@ spec:
           imagePullPolicy: Always
           ports:
             - name: http
-              containerPort: 3000
+              containerPort: 80
               protocol: TCP
             - name: http3
-              containerPort: 4430
+              containerPort: 443
               protocol: TCP
             - name: quic
-              containerPort: 4431
+              containerPort: 8443
               protocol: UDP
       restartPolicy: Always

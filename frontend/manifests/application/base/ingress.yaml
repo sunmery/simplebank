@@ -4,6 +4,7 @@ metadata:
   name: simple-bank-web-ingress
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
   ingressClassName: higress
   rules:
@@ -16,7 +17,7 @@ spec:
               service:
                 name: web-simple-bank-service
                 port:
-                  number: 4430
+                  number: 443
 
   tls:
     - hosts:
