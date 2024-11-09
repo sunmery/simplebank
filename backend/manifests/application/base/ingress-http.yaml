@@ -17,7 +17,7 @@ spec:
               service:
                 name: api-simple-bank-service
                 port:
-                  number: 80
+                  number: 30001
 
   # tls:
   #   - hosts:

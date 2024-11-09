@@ -7,12 +7,12 @@ spec:
     app: simple-bank-api
   ports:
     - name: http
-      port: 80
+      port: 30001
       protocol: TCP
       targetPort: 30001
       # nodePort: 30001
     - name: grpc
-      port: 443
+      port: 30002
       protocol: TCP
       targetPort: 30002
       # nodePort: 30002

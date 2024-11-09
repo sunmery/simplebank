@@ -18,7 +18,7 @@ spec:
               service:
                 name: api-simple-bank-service
                 port:
-                  number: 443
+                  number: 30002
   # tls:
   #   - hosts:
   #       - grpc.api-r.com
