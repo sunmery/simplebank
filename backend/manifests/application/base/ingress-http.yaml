@@ -4,13 +4,7 @@ metadata:
   name: simple-bank-http-ingress
   annotations:
     # cert-manager.io/cluster-issuer: letsencrypt
-    nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "https://web.api-r.com"
-    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, PATCH, DELETE"
-    nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization"
-    nginx.ingress.kubernetes.io/cors-expose-headers: "Content-Length, X-Kuma-Revision"
-    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
-    nginx.ingress.kubernetes.io/cors-max-age: "86400"
+    higress.io/backend-protocol: "HTTPS"
 spec:
   ingressClassName: higress
   rules:
