@@ -15,7 +15,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: api-simple-bank-service
+                name: prod-api-simple-bank-service
                 port:
                   number: 30001
 

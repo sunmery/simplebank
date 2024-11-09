@@ -1,5 +1,5 @@
 name: Deploy frontend application to production
-run-name: ${{ github.actor }} is learning GitHub Actions
+run-name: Deploy frontend application to production
 
 # git add .; git commit -m "test: test github actions"
 # git tag v1.1.8; git push; git push main v1.1.8
