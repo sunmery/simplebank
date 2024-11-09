@@ -140,7 +140,7 @@ jobs:
       - # 构建, 标记, 推送镜像到容器注册表
         name: Build tag and push image to Cloud Registry
         run: |
-          docker buildx build . \
+          docker build . \
             --progress=plain \
             -t actions/backend \
             --build-arg GO_PROXY=$GO_PROXY \
@@ -150,9 +150,7 @@ jobs:
             --build-arg HTTP_PORT=$BACKEND_HTTP_PORT \
             --build-arg GRPC_PORT=$BACKEND_GRPC_PORT \
             --build-arg GOOS=$GOOS \
-            --build-arg GOARCH=$GOARCH \
-            --platform $TARGET_PLATFORMS \
-            --load
+            --build-arg GOARCH=$GOARCH
 
           docker tag actions/backend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:$VERSION
           # docker tag actions/backend ${{ secrets.REGISTRY }}/${{ secrets.REGISTER_REPOSITORY }}:latest
