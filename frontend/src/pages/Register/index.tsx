@@ -6,8 +6,8 @@ import {Alert, Button, Input, Stack} from '@mui/joy'
 interface RegisterUser {
 	username: string
 	fullName: string
-	email: string
 	password: string
+	email: string
 }
 
 interface RegisterResponse {
@@ -83,7 +83,7 @@ export default function Register() {
 				variant="solid"
 				color="success"
 			>
-				注册成功! 欢迎您 {data.fullName}
+				注册成功! 欢迎您 {data.user.full_name}
 			</Alert>
 		)
 	}

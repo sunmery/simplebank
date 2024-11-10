@@ -18,7 +18,6 @@ import (
 	"net/http"
 	"simple_bank/config"
 	"simple_bank/gapi"
-	"simple_bank/middleware"
 	"simple_bank/pb"
 
 	"simple_bank/api"
@@ -144,8 +143,8 @@ func runGatewayServer(cfg *config.Config, store db.Store, taskDistributor worker
 	//  创建多路复用器
 	mux := http.NewServeMux()
 	// 路由到grpc服务
-	mux.Handle("/", middleware.GrpcCORS(grpcMux))
-	// mux.Handle("/", grpcMux)
+	// mux.Handle("/", middleware.GrpcCORS(grpcMux))
+	mux.Handle("/", grpcMux)
 
 	fs := http.FileServer(http.Dir("./doc/swagger"))
 	mux.Handle("/swagger/", http.StripPrefix("/swagger/", fs))
