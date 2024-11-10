@@ -14,7 +14,7 @@ func GrpcCORS(h http.Handler) http.Handler {
 		log.Printf("origin: %s", origin)
 
 		if origin != "" {
-			w.Header().Set("Access-Control-Allow-Origin", "http://gateway.api-r.com")
+			w.Header().Set("Access-Control-Allow-Origin", origin)
 			if r.Method == "OPTIONS" && r.Header.Get("Access-Control-Request-Method") != "" {
 				preflightHandler(w, r)
 				return
@@ -28,12 +28,15 @@ func GrpcCORS(h http.Handler) http.Handler {
 // CORS from any origin using the methods "GET", "HEAD", "POST", "PUT", "DELETE"
 // We insist, don't do this without consideration in production systems.
 func preflightHandler(w http.ResponseWriter, r *http.Request) {
-	headers := []string{"Origin", "Content-Type", "Accept", "Authorization"}
+	// 允许的Headers
+	headers := []string{"Origin", "Host", "Content-Type", "Accept", "Authorization"}
 	w.Header().Set("Access-Control-Allow-Headers", strings.Join(headers, ","))
 
+	// 允许的请求方法
 	methods := []string{"GET", "HEAD", "POST", "PUT", "DELETE"}
 	w.Header().Set("Access-Control-Allow-Methods", strings.Join(methods, ","))
 
+	// 允许跨域请求携带凭证信息
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 
 	log.Printf("preflight request for %s", r.URL.Path)

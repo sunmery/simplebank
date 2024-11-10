@@ -22,10 +22,16 @@ interface RegisterResponse {
 
 const createUser = async (user: RegisterUser) => {
 	try {
-		const res = await fetch(`${import.meta.env.VITE_URL}/v1/create_user`, {
+		// const res = await fetch(`${import.meta.env.VITE_URL}/v1/create_user`, {
+		const res = await fetch(`http://http.api-r.com:30001/v1/create_user`, {
 			method: 'PUT',
-			headers: {'Content-Type': 'application/json', 'Host': 'http.api-r.com'},
+			headers: {
+				'Content-Type': 'application/json',
+				'Host': 'http.api-r.com',
+				'Origin': 'http://localhost:3000',
+			},
 			body: JSON.stringify({...user}),
+			redirect: 'follow',
 		})
 		const data: RegisterResponse = await res.json()
 		console.log(data)

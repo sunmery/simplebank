@@ -2,9 +2,10 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: simple-bank-http-ingress
-  annotations:
+  # annotations:
     # cert-manager.io/cluster-issuer: letsencrypt
-    higress.io/backend-protocol: "HTTPS"
+    # higress.io/backend-protocol: "HTTPS"
+    # nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   ingressClassName: higress
   rules:
