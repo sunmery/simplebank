@@ -6,6 +6,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
@@ -28,6 +30,12 @@ type Querier interface {
 	//  VALUES ($1, $2)
 	//  RETURNING id, account_id, amount, created_at
 	CreateEntry(ctx context.Context, arg CreateEntryParams) (Entries, error)
+	//CreateSessions
+	//
+	//  INSERT INTO sessions(id,username, refresh_token, user_agent, client_ip, is_blocked, expires_at)
+	//  VALUES ($1,$2,$3,$4,$5,$6,$7)
+	//  RETURNING id, username, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at
+	CreateSessions(ctx context.Context, arg CreateSessionsParams) (Sessions, error)
 	//CreateTransfer
 	//
 	//  INSERT INTO transfers(from_account_id, to_account_id, amount)
@@ -36,13 +44,16 @@ type Querier interface {
 	CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfers, error)
 	//CreateUser
 	//
-	//  INSERT INTO users (username,
-	//                     full_name,
-	//                     hashed_password,
-	//                     email)
+	//  INSERT INTO users (username, full_name, hashed_password, email)
 	//  VALUES ($1, $2, $3, $4)
-	//  RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at
+	//  RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at, is_email_verified
 	CreateUser(ctx context.Context, arg CreateUserParams) (Users, error)
+	//CreateVerifyEmail
+	//
+	//  INSERT INTO verify_emails(username, email, secret_code)
+	//  VALUES ($1, $2, $3)
+	//  RETURNING id, username, email, secret_code, is_used, created_at, expired_at
+	CreateVerifyEmail(ctx context.Context, arg CreateVerifyEmailParams) (VerifyEmails, error)
 	//DeleteAccount
 	//
 	//  DELETE
@@ -70,6 +81,13 @@ type Querier interface {
 	//  WHERE id = $1
 	//  LIMIT 1
 	GetEntry(ctx context.Context, id int64) (Entries, error)
+	//GetSessions
+	//
+	//  SELECT id, username, refresh_token, user_agent, client_ip, is_blocked, expires_at, created_at
+	//  FROM sessions
+	//  WHERE id = $1
+	//  LIMIT 1
+	GetSessions(ctx context.Context, id uuid.UUID) (Sessions, error)
 	//GetTransfer
 	//
 	//  SELECT id, from_account_id, to_account_id, amount, created_at
@@ -79,7 +97,7 @@ type Querier interface {
 	GetTransfer(ctx context.Context, id int64) (Transfers, error)
 	//GetUser
 	//
-	//  SELECT username, full_name, hashed_password, email, password_changed_at, created_at, updated_at
+	//  SELECT username, full_name, hashed_password, email, password_changed_at, created_at, updated_at, is_email_verified
 	//  FROM users
 	//  WHERE username = $1
 	//  LIMIT 1
@@ -116,6 +134,29 @@ type Querier interface {
 	//  WHERE id = $1
 	//  RETURNING id, owner, balance, currency, created_at
 	UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Accounts, error)
+	//UpdateUser
+	//
+	//  UPDATE users
+	//  SET
+	//       username = coalesce($1, username),
+	//       full_name = coalesce($2, full_name),
+	//       hashed_password = coalesce($3, hashed_password),
+	//       email = coalesce($4, email),
+	//       is_email_verified = coalesce($5, is_email_verified)
+	//  WHERE username = $1
+	//  RETURNING username, full_name, hashed_password, email, password_changed_at, created_at, updated_at, is_email_verified
+	UpdateUser(ctx context.Context, arg UpdateUserParams) (Users, error)
+	// 更新is_used为已使用(TRUE),
+	// 条件是一次性密码(secret_code)相同且没有使用过(is_used = FALSE)和在有效期内(expired_at > now())
+	//
+	//  UPDATE verify_emails
+	//  SET is_used = TRUE
+	//  WHERE id = $1
+	//    AND secret_code = $2
+	//    AND is_used = FALSE
+	//    AND expired_at > now()
+	//  RETURNING id, username, email, secret_code, is_used, created_at, expired_at
+	UpdateVerifyEmail(ctx context.Context, arg UpdateVerifyEmailParams) (VerifyEmails, error)
 }
 
 var _ Querier = (*Queries)(nil)

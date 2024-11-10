@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"simple_bank/constants"
+	"simple_bank/pkg"
 	"simple_bank/pkg/token"
-
-	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/gin-gonic/gin"
 
@@ -35,25 +34,8 @@ func (s *Server) createAccount(ctx *gin.Context) {
 		Currency: req.Currency,
 	}
 	account, err := s.store.CreateAccount(ctx, arg)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			fmt.Printf("postgres sql err message is '%s' \n", pgErr.Message)
-			fmt.Printf("postgres sql err code is '%s' \n", pgErr.Code)
-
-			switch pgErr.Code {
-			case "23503":
-				ctx.JSON(http.StatusForbidden, gin.H{
-					"error": pgErr.Error(),
-				})
-				return
-			case "23505":
-				ctx.JSON(http.StatusForbidden, gin.H{
-					"error": pgErr.Error(),
-				})
-				return
-			}
-		}
+	// TODO: 待测试
+	if pkg.PgErrorCode(err) != constants.UniqueViolation {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}

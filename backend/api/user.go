@@ -3,6 +3,8 @@ package api
 import (
 	"database/sql"
 	"errors"
+	"fmt"
+	"github.com/google/uuid"
 	"net/http"
 	"time"
 
@@ -120,8 +122,12 @@ func (s *Server) loginUser(ctx *gin.Context) {
 	}
 
 	type loginUserResponse struct {
-		AccessToken string       `json:"accessToken"`
-		User        UserResponse `json:"user"`
+		SessionID             uuid.UUID    `json:"sessionId"`             // 会话ID(刷新令牌ID)
+		AccessToken           string       `json:"accessToken"`           // 令牌, 无状态
+		AccessTokenExpiresAt  time.Time    `json:"accessTokenExpiresAt"`  // 令牌过期时间
+		RefreshToken          string       `json:"refreshToken"`          // 刷新令牌, 有状态
+		RefreshTokenExpiresAt time.Time    `json:"refreshTokenExpiresAt"` // 刷新令牌过期时间
+		User                  UserResponse `json:"user"`
 	}
 
 	var req loginUserRequest
@@ -153,8 +159,28 @@ func (s *Server) loginUser(ctx *gin.Context) {
 	}
 
 	// 颁发token
-	token, createErr := s.tokenMake.CreateToken(user.Username, s.config.AccessTokenDuration)
+	token, accessPayload, createErr := s.tokenMake.CreateToken(user.Username, s.config.AccessTokenDuration)
 	if createErr != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	refreshToken, refreshPayload, err := s.tokenMake.CreateToken(user.Username, s.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	fmt.Println("refreshPayload.ExpiresAt.Time", refreshPayload.ExpiresAt.Time)
+	sessions, err := s.store.CreateSessions(ctx, db.CreateSessionsParams{
+		ID:           refreshPayload.ID,
+		Username:     user.Username,
+		RefreshToken: refreshToken,
+		UserAgent:    ctx.Request.UserAgent(),
+		ClientIp:     ctx.ClientIP(),
+		IsBlocked:    false,
+	})
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -168,7 +194,11 @@ func (s *Server) loginUser(ctx *gin.Context) {
 		UpdatedAt:         user.UpdatedAt,
 	}
 	ctx.JSON(http.StatusOK, loginUserResponse{
-		AccessToken: token,
-		User:        rsp,
+		SessionID:             sessions.ID,
+		AccessToken:           token,
+		AccessTokenExpiresAt:  accessPayload.ExpiresAt.Time,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiresAt: refreshPayload.ExpiresAt.Time,
+		User:                  rsp,
 	})
 }

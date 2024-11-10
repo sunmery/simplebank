@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"simple_bank/middleware"
 
 	"simple_bank/config"
@@ -50,7 +51,11 @@ func NewServer(config *config.Config, store db.Store) (*Server, error) {
 func (s *Server) setupRouter() {
 	// 	gin.SetMode(gin.ReleaseMode)
 	routes := gin.Default()
-	routes.Use(middleware.Cors())
+	routes.Use(middleware.GinCors())
+
+	// kubernetes 健康检查
+	routes.GET("/healthz", s.healthCheck)
+	routes.GET("/readyz", s.readyCheck)
 
 	// 创建单个用户
 	routes.PUT("/users", s.CreateUser)
@@ -76,11 +81,26 @@ func (s *Server) setupRouter() {
 	s.router = routes
 }
 
+// 健康检查
+func (s *Server) healthCheck(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+	})
+}
+
+// 就绪探针
+func (s *Server) readyCheck(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{
+		"status": "ready",
+	})
+}
+
 // Start 启动
 func (s *Server) Start(address string) error {
 	return s.router.Run(address)
 }
 
+// 错误处理
 func errorResponse(err error) gin.H {
 	return gin.H{"error": err.Error()}
 }

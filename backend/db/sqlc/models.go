@@ -6,6 +6,9 @@ package db
 
 import (
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Accounts struct {
@@ -21,6 +24,17 @@ type Entries struct {
 	AccountID int64     `json:"accountID"`
 	Amount    int64     `json:"amount"`
 	CreatedAt time.Time `json:"createdAt"`
+}
+
+type Sessions struct {
+	ID           uuid.UUID          `json:"id"`
+	Username     string             `json:"username"`
+	RefreshToken string             `json:"refreshToken"`
+	UserAgent    string             `json:"userAgent"`
+	ClientIp     string             `json:"clientIp"`
+	IsBlocked    bool               `json:"isBlocked"`
+	ExpiresAt    pgtype.Timestamptz `json:"expiresAt"`
+	CreatedAt    time.Time          `json:"createdAt"`
 }
 
 type Transfers struct {
@@ -39,4 +53,15 @@ type Users struct {
 	PasswordChangedAt time.Time `json:"passwordChangedAt"`
 	CreatedAt         time.Time `json:"createdAt"`
 	UpdatedAt         time.Time `json:"updatedAt"`
+	IsEmailVerified   bool      `json:"isEmailVerified"`
+}
+
+type VerifyEmails struct {
+	ID         int64     `json:"id"`
+	Username   string    `json:"username"`
+	Email      string    `json:"email"`
+	SecretCode string    `json:"secretCode"`
+	IsUsed     bool      `json:"isUsed"`
+	CreatedAt  time.Time `json:"createdAt"`
+	ExpiredAt  time.Time `json:"expiredAt"`
 }

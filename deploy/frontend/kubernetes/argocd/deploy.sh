@@ -2,11 +2,11 @@
 # 启用 POSIX 模式并设置严格的错误处理机制
 set -o posix errexit -o pipefail
 
-NAME="frontend1"
-NAMESPACE="bank1"
+NAME="frontend"
+NAMESPACE="bank"
 PORT1="80"
 PORT2="443"
-IMAGE="ccr.ccs.tencentyun.com/lisa/frontend:v0.6.0"
+IMAGE="ccr.ccs.tencentyun.com/lisa/frontend:v2.0.0"
 PORT_TYPE="NodePort"
 DOMAIN="lookeke.com"
 NFS_ADDRESS="116.213.43.175"

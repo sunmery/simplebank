@@ -1,3 +1,5 @@
+## 状态
+![workflow运行状态](https://github.com/sunmery/simplebank/actions/workflows/deploy.yaml/badge.svg)
 ## 介绍
 
 基于前端React技术栈与Golang后端Kratos技术栈组合的规范化最佳实践(个人认为)的前后端项目
@@ -8,6 +10,31 @@
 2. 与CI/CD(Continuous integration and continuous deployment)的自动化DevOps集成
 3. 支持Docker与Kubernetes部署
 4. 集百家所长
+
+## 最佳实践
+### 错误处理
+1. 在rpc的处理错误中返回的字段名应为proto中定义的字段格式, 即蛇形命名
+例: 校验rpc参数
+```go
+func validateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+
+	// 应为proto中定义的字段名, 即蛇形命名法的字段
+	if err := validator.ValidateUsername(req.GetFullName()); err != nil {
+		violations = append(violations, fieldViolation("full_name", err))
+	}
+
+	return
+}
+```
+### 延迟队列
+场景: 在用户注册与发送验证邮件的事务中, 发送验证邮件的任务队列需要等待用户注册在数据库完成,
+如果数据库延迟高时, 发送验证邮件的任务比用户注册运行快就会查找不到该用户的创建, 那么设置延迟就很有必要
+
+
+### Token设计
+颁发令牌应该设计为较短, 例如5分钟, 而刷新令牌可以较长, 例如7天, 14天甚至30天
+令牌应该有次数限制和一天颁发token的限制, 例如
+1天只能颁发5次
 
 ### 前端
 

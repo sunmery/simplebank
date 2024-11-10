@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+// 服务列表
+
+package simple_bank;
+
+option go_package = "simple_bank/pb";
+
+import "google/api/annotations.proto";
+import "rpc_create_user.proto";
+import "rpc_login_user.proto";
+import "rpc_verify_email.proto";
+import "rpc_update_user.proto";
+
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+	info: {
+		title: "Simple bank API"
+		version: "0.3"
+		contact: {
+			name: "Mandala"
+			url: "https://github.com/sunmery/simplebank"
+			email: "xiconz@qq.com"
+		}
+		license: {
+			name: "BSD 3-Clause License"
+			url: "https://github.com/sunmery/simplebank/blob/main/LICENSE"
+		}
+		extensions: {
+			key: "x-something-something"
+			value: {string_value: "yadda"}
+		}
+	}
+	// Overwriting host entry breaks tests, so this is not done here.
+	external_docs: {
+		url: "https://github.com/sunmery/simplebank"
+		description: "simple bank"
+	}
+};
+
+service UserService {
+	rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
+		option (google.api.http) = {
+			put: "/v1/create_user"
+			body: "*"
+		};
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "使用此API创建用户",
+			summary: "创建用户"
+		};
+	}
+	rpc LoginUser(LoginUserRequest) returns (LoginUserResponse) {
+		option (google.api.http) = {
+			post: "/v1/login_user"
+			body: "*"
+		};
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "使用此API用户登录",
+			summary: "用户登录"
+		};
+	}
+	rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse){
+		option (google.api.http) = {
+			patch: "/v1/update_user"
+			body: "*"
+		};
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "使用此API更新用户",
+			summary: "更新用户"
+		};
+	}
+	rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse) {
+		option (google.api.http) = {
+			get: "/v1/verify_email"
+		};
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "使用此API验证用户邮件",
+			summary: "验证电子邮件"
+		};
+	}
+}

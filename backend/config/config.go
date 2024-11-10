@@ -8,10 +8,19 @@ import (
 )
 
 type Config struct {
-	DBSource            string        `mapstructure:"DB_SOURCE"`
-	ServerAddress       string        `mapstructure:"SEVER_ADDRESS"`
-	TokenSymmetricKey   string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
-	AccessTokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	ENVIRONMENT          string        `mapstructure:"ENVIRONMENT"`
+	DBSource             string        `mapstructure:"DB_SOURCE"`
+	RedisAddress         string        `mapstructure:"REDIS_ADDRESS"`
+	RedisUsername        string        `mapstructure:"REDIS_USERNAME"`
+	RedisPassword        string        `mapstructure:"REDIS_PASSWORD"`
+	HTTPServerAddress    string        `mapstructure:"HTTP_SEVER_ADDRESS"`
+	GRPCServerAddress    string        `mapstructure:"GRPC_SEVER_ADDRESS"`
+	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
+	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	RefreshTokenDuration string        `mapstructure:"REFRESH_TOKEN_DURATION"`
+	EmailSenderName      string        `mapstructure:"EMAIL_SENDER_NAME"`
+	EmailSenderAddress   string        `mapstructure:"EMAIL_SENDER_ADDRESS"`
+	EmailSenderPassword  string        `mapstructure:"EMAIL_SENDER_PASSWORD"`
 }
 
 func LoadConfig(path string) (cfg *Config, err error) {
