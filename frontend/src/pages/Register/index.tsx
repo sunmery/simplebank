@@ -24,7 +24,7 @@ const createUser = async (user: RegisterUser) => {
 	try {
 		const res = await fetch(`${import.meta.env.VITE_URL}/v1/create_user`, {
 			method: 'PUT',
-			headers: {'Content-Type': 'application/json'},
+			headers: {'Content-Type': 'application/json', 'Host': 'http.api-r.com'},
 			body: JSON.stringify({...user}),
 		})
 		const data: RegisterResponse = await res.json()
@@ -37,6 +37,7 @@ const createUser = async (user: RegisterUser) => {
 		throw new Error(String(error))
 	}
 }
+
 interface User {
 	username: string
 	fullName: string

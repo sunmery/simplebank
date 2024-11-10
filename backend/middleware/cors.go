@@ -10,8 +10,11 @@ import (
 // GrpcCORS grpc-gateway cors
 func GrpcCORS(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if origin := r.Header.Get("Origin"); origin != "" {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
+		origin := r.Header.Get("Origin")
+		log.Printf("origin: %s", origin)
+
+		if origin != "" {
+			w.Header().Set("Access-Control-Allow-Origin", "http://gateway.api-r.com")
 			if r.Method == "OPTIONS" && r.Header.Get("Access-Control-Request-Method") != "" {
 				preflightHandler(w, r)
 				return
@@ -25,10 +28,14 @@ func GrpcCORS(h http.Handler) http.Handler {
 // CORS from any origin using the methods "GET", "HEAD", "POST", "PUT", "DELETE"
 // We insist, don't do this without consideration in production systems.
 func preflightHandler(w http.ResponseWriter, r *http.Request) {
-	headers := []string{"Content-Type", "Accept", "Authorization"}
+	headers := []string{"Origin", "Content-Type", "Accept", "Authorization"}
 	w.Header().Set("Access-Control-Allow-Headers", strings.Join(headers, ","))
+
 	methods := []string{"GET", "HEAD", "POST", "PUT", "DELETE"}
 	w.Header().Set("Access-Control-Allow-Methods", strings.Join(methods, ","))
+
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+
 	log.Printf("preflight request for %s", r.URL.Path)
 }
 

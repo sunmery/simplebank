@@ -14,6 +14,7 @@ metadata:
     ## 开启或关闭跨域
     nginx.ingress.kubernetes.io/enable-cors: "true"
     ## 允许的第三方站点，支持泛域名，逗号分隔；支持通配符*。默认值为*，即允许所有第三方站点
+    # nginx.ingress.kubernetes.io/cors-allow-origin: "https://web.api-r.com"
     nginx.ingress.kubernetes.io/cors-allow-origin: "https://web.api-r.com"
     ## 允许的请求方法，如GET、POST，逗号分隔；支持通配符*。默认值为GET, PUT, POST, DELETE, PATCH, OPTIONS
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, PUT, POST, DELETE, PATCH, OPTIONS"

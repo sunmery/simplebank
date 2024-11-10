@@ -10,11 +10,11 @@ spec:
       port: 30001
       protocol: TCP
       targetPort: 30001
-      # nodePort: 30001
+      nodePort: 30001
     - name: grpc
       port: 30002
       protocol: TCP
       targetPort: 30002
-      # nodePort: 30002
-  type: ClusterIP
+      nodePort: 30002
+  type: NodePort
 
